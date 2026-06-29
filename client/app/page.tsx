@@ -1,15 +1,20 @@
+import Navbar from "@/components/layout/Navbar";
+import Hero from "@/components/home/Hero";
+import Features from "@/components/home/Features";
+import Footer from "@/components/layout/Footer";
+
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
-      <h1 className="text-6xl font-bold">Eleva</h1>
+    <main className="min-h-screen bg-black text-white">
 
-      <p className="mt-6 text-xl text-gray-300">
-        AI-powered Placement Preparation Platform
-      </p>
+      <Navbar />
 
-      <button className="mt-10 rounded-xl bg-white px-8 py-3 text-lg font-semibold text-black transition hover:scale-105">
-        Start Your Journey
-      </button>
+      <Hero />
+
+      <Features />
+
+      <Footer />
+
     </main>
   );
 }
