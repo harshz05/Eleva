@@ -1,34 +1,32 @@
+import Button from "@/components/ui/Button";
+import Container from "@/components/ui/Container";
+
 export default function Hero() {
   return (
-    <section className="flex min-h-[80vh] flex-col items-center justify-center text-center">
+    <section className="py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-5xl font-extrabold tracking-tight md:text-6xl">
+            Ace Your Next
+            <span className="text-blue-600"> Technical Interview</span>
+          </h1>
 
-      <h1 className="text-6xl font-bold">
-        Ace Your Next Interview
-      </h1>
+          <p className="mt-6 text-lg leading-8 text-slate-600">
+            Practice AI-powered mock interviews, receive personalized
+            feedback, and track your improvement—all in one place.
+          </p>
 
-      <p className="mt-6 max-w-2xl text-xl text-gray-400">
+          <div className="mt-10 flex justify-center gap-4">
+            <Button>
+              Get Started
+            </Button>
 
-        AI-powered mock interviews tailored to your resume,
-        communication skills and career goals.
-
-      </p>
-
-      <div className="mt-10 flex gap-4">
-
-        <button className="rounded-xl bg-white px-8 py-3 font-semibold text-black">
-
-          Start Interview
-
-        </button>
-
-        <button className="rounded-xl border border-gray-600 px-8 py-3">
-
-          View Demo
-
-        </button>
-
-      </div>
-
+            <Button variant="outline">
+              Learn More
+            </Button>
+          </div>
+        </div>
+      </Container>
     </section>
   );
 }
