@@ -1,99 +1,104 @@
 # Eleva Roadmap
 
-## Phase 1 — Foundation ✅
+## Vision
 
-* [x] Project Initialization
-* [x] Git Setup
-* [x] Next.js Setup
-* [x] Tailwind CSS
-* [x] Basic Landing Page
-* [x] Component Architecture
-* [x] Responsive Features Section
+Build a startup-quality AI-powered placement preparation platform that helps students practice technical interviews, receive AI-driven feedback, and track their progress.
 
 ---
 
-## Phase 2 — Landing Page
+# Phase 1 — Foundation ✅
 
-* [ ] Premium Hero Design
-* [ ] Reusable UI Components
-* [ ] Statistics Section
-* [ ] Testimonials
-* [ ] Pricing Section
-* [ ] Footer Improvements
-* [ ] Responsive Navbar
-* [ ] Final Landing Page Polish
-
----
-
-## Phase 3 — Authentication
-
-* [ ] Clerk Authentication
-* [ ] Login
-* [ ] Signup
-* [ ] Protected Routes
+- [x] Project Initialization
+- [x] Git Repository Setup
+- [x] GitHub Integration
+- [x] Next.js Setup
+- [x] TypeScript
+- [x] Tailwind CSS
+- [x] App Router Configuration
+- [x] Initial Project Structure
 
 ---
 
-## Phase 4 — AI Interview Engine
+# Phase 2 — Landing Page (In Progress)
 
-* [ ] Resume Upload
-* [ ] AI Question Generation
-* [ ] Interview History
-* [ ] AI Feedback
+## Completed ✅
 
----
+- [x] Responsive Navbar
+- [x] Hero Section
+- [x] Features Section
+- [x] Statistics Section
+- [x] Testimonials Section
+- [x] Footer (Basic)
+- [x] Reusable UI Design System
+- [x] Hero Badge
+- [x] Gradient Hero Heading
+- [x] Lucide React Icons
+- [x] Responsive Layout Improvements
+- [x] Reusable Constants Architecture
 
-## Phase 5 — Voice & Analytics
+## Remaining
 
-* [ ] Voice Interviews
-* [ ] Confidence Detection
-* [ ] Progress Dashboard
-* [ ] Weak Topic Analysis
-
----
-
-## Phase 6 — Deployment
-
-* [ ] Production Deployment
-* [ ] Custom Domain
-* [ ] Portfolio Integration
-
-## ✅ Completed
-
-### Project Setup
-- Next.js
-- TypeScript
-- Tailwind CSS
-- Git
-- GitHub
-
-### Landing Page
-- Navbar
-- Hero
-- Statistics
-- Features
-- Footer
-
-### UI Design System
-- Container
-- Button
-- Card
-- SectionHeading
-- Badge
+- [ ] Pricing Section
+- [ ] Footer Redesign
+- [ ] Mobile Navigation Menu
+- [ ] Landing Page Final Polish
+- [ ] Animations & Micro-interactions
 
 ---
 
-## Next Sprint
+# Phase 3 — Authentication
 
-### Landing Page Polish
-- Testimonials section
-- Pricing section
-- Better footer
-- Responsive navbar improvements
-- Better spacing and visual hierarchy
+- [ ] Clerk Authentication
+- [ ] Login
+- [ ] Signup
+- [ ] Protected Routes
+- [ ] User Profile
 
-### After Landing Page
-- Authentication (Clerk)
-- Dashboard
-- Resume Upload
-- AI Interview Flow
+---
+
+# Phase 4 — Dashboard
+
+- [ ] Dashboard Layout
+- [ ] Sidebar Navigation
+- [ ] Interview History
+- [ ] Progress Dashboard
+- [ ] User Settings
+
+---
+
+# Phase 5 — AI Interview Engine
+
+- [ ] Resume Upload
+- [ ] Resume Parsing
+- [ ] AI Question Generation
+- [ ] AI Mock Interview
+- [ ] AI Feedback
+- [ ] Interview Reports
+
+---
+
+# Phase 6 — Voice & Analytics
+
+- [ ] Voice-based Interviews
+- [ ] Confidence Detection
+- [ ] Weak Topic Analysis
+- [ ] Personalized Recommendations
+
+---
+
+# Phase 7 — Backend
+
+- [ ] Express Server
+- [ ] PostgreSQL
+- [ ] Prisma ORM
+- [ ] Database Models
+- [ ] API Routes
+
+---
+
+# Phase 8 — Deployment
+
+- [ ] Vercel Deployment
+- [ ] Production Environment Variables
+- [ ] Custom Domain
+- [ ] Portfolio Integration

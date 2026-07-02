@@ -116,3 +116,26 @@ July 1, 2026
 ### Result
 
 Eleva now has the foundation of a reusable design system that will support future frontend development.
+
+## Sprint 3 — Landing Page Polish & Data Architecture
+
+### Completed
+
+- Added Testimonials section.
+- Integrated Lucide React icons.
+- Implemented reusable Badge component.
+- Enhanced Hero section with premium styling.
+- Improved Statistics section with reusable Card component.
+- Extended Card component to support custom className.
+- Introduced constants folder to separate UI from data.
+- Improved responsive layout.
+- Fixed project dependency structure.
+- Connected GitHub remote and established push workflow.
+
+### Engineering Concepts Learned
+
+- Component extensibility
+- Separation of Concerns
+- Design System evolution
+- External icon libraries
+- Project dependency management

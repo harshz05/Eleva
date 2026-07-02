@@ -43,3 +43,22 @@ Frontend
 Version Control
 - Git
 - GitHub
+
+## Constants Layer
+
+Purpose
+
+Separate static application data from presentation components.
+
+Current Files
+
+constants/
+├── statistics.ts
+└── testimonials.ts
+
+Benefits
+
+- Cleaner components
+- Easier maintenance
+- Simpler migration to backend APIs
+- Better separation of concerns
