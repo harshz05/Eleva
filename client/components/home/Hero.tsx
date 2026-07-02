@@ -1,14 +1,22 @@
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
+import Badge from "@/components/ui/Badge";
+import { Sparkles } from "lucide-react";
 
 export default function Hero() {
   return (
     <section className="py-24">
       <Container>
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight md:text-6xl">
+          <Badge>
+           <Sparkles size={16} className="mr-2" />
+           AI-Powered Placement Preparation
+          </Badge>
+          <h1 className="mt-6 text-5xl font-extrabold tracking-tight md:text-6xl">
             Ace Your Next
-            <span className="text-blue-600"> Technical Interview</span>
+            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+  {" "}Technical Interview
+</span>
           </h1>
 
           <p className="mt-6 text-lg leading-8 text-slate-600">

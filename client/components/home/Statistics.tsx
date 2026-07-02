@@ -1,24 +1,8 @@
 import Container from "@/components/ui/Container";
 import SectionHeading from "@/components/ui/SectionHeading";
+import Card from "@/components/ui/Card";
+import { stats } from "@/constants/statistics";
 
-const stats = [
-  {
-    value: "10K+",
-    label: "Mock Interviews",
-  },
-  {
-    value: "95%",
-    label: "Placement Success",
-  },
-  {
-    value: "24/7",
-    label: "Available Anytime",
-  },
-  {
-    value: "AI",
-    label: "Personalized Feedback",
-  },
-];
 
 export default function Statistics() {
   return (
@@ -29,17 +13,20 @@ export default function Statistics() {
           subtitle="Everything you need to prepare for placements with confidence."
         />
 
-        <div className="mt-12 grid grid-cols-2 gap-8 md:grid-cols-4">
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <h3 className="text-4xl font-bold text-blue-600">
-                {stat.value}
-              </h3>
+<Card
+  key={stat.label}
+  className="text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+>
+  <h3 className="text-5xl font-bold text-blue-600">
+    {stat.value}
+  </h3>
 
-              <p className="mt-2 text-slate-600">
-                {stat.label}
-              </p>
-            </div>
+  <p className="mt-2 text-slate-600">
+    {stat.label}
+  </p>
+</Card>
           ))}
         </div>
       </Container>

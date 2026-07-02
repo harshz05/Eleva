@@ -3,6 +3,8 @@ import Hero from "@/components/home/Hero";
 import Features from "@/components/home/Features";
 import Footer from "@/components/layout/Footer";
 import Statistics from "@/components/home/Statistics";
+import Testimonials from "@/components/home/Testimonials";
+
 
 export default function Home() {
   return (
@@ -15,6 +17,8 @@ export default function Home() {
       <Features />
 
       <Statistics />
+
+      <Testimonials />
 
       <Footer />
 
