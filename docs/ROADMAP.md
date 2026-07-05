@@ -19,34 +19,32 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 
 ---
 
-# Phase 2 — Landing Page (In Progress)
+# Phase 2 — Landing Page ✅
 
-## Completed ✅
+## Completed
 
 - [x] Responsive Navbar
+- [x] Mobile Navigation Menu
 - [x] Hero Section
 - [x] Features Section
 - [x] Statistics Section
 - [x] Testimonials Section
-- [x] Footer (Basic)
+- [x] Pricing Section
+- [x] Footer Redesign
 - [x] Reusable UI Design System
 - [x] Hero Badge
 - [x] Gradient Hero Heading
 - [x] Lucide React Icons
 - [x] Responsive Layout Improvements
 - [x] Reusable Constants Architecture
+- [x] Smooth Scrolling
+- [x] Hover Animations
+- [x] Landing Page Polish
 
-## Remaining
-
-- [ ] Pricing Section
-- [ ] Footer Redesign
-- [ ] Mobile Navigation Menu
-- [ ] Landing Page Final Polish
-- [ ] Animations & Micro-interactions
 
 ---
 
-# Phase 3 — Authentication
+# Phase 3 — Authentication ( Current Sprint)
 
 - [ ] Clerk Authentication
 - [ ] Login

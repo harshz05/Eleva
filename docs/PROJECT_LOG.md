@@ -139,3 +139,55 @@ Eleva now has the foundation of a reusable design system that will support futur
 - Design System evolution
 - External icon libraries
 - Project dependency management
+
+# Sprint 4 — Landing Page Completion
+
+## Features Completed
+
+- Implemented Pricing section.
+- Added reusable pricing data in `constants/pricing.ts`.
+- Redesigned Footer with multiple sections:
+  - Brand
+  - Quick Links
+  - Resources
+  - Social Links
+- Added reusable footer data in `constants/footerLinks.ts`.
+- Built a fully responsive Navbar.
+- Added mobile navigation with hamburger menu.
+- Implemented smooth scrolling for section navigation.
+- Added hover animations and micro-interactions across the landing page.
+- Improved reusable Button component with:
+  - hover animations
+  - active state
+  - focus ring
+  - smoother transitions
+- Improved reusable Card component with better transition behavior and explicit text colors.
+
+---
+
+## React Concepts Learned
+
+- Client Components (`"use client"`)
+- `useState`
+- Event Handling (`onClick`)
+- Conditional Rendering
+- Responsive UI using Tailwind breakpoints
+- State-driven UI updates
+
+---
+
+## UI/UX Improvements
+
+- Better CTA buttons
+- Interactive cards
+- Sticky navigation
+- Responsive mobile experience
+- Improved spacing and layout consistency
+- Smooth scrolling navigation
+
+---
+
+## Git
+
+Completed first major feature milestone:
+**Responsive Landing Page MVP**

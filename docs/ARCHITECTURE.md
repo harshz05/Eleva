@@ -52,9 +52,16 @@ Separate static application data from presentation components.
 
 Current Files
 
+Current Files
+
+```text
 constants/
 ├── statistics.ts
-└── testimonials.ts
+├── testimonials.ts
+├── pricing.ts
+├── footerLinks.ts
+└── navLinks.ts
+```
 
 Benefits
 
@@ -62,3 +69,98 @@ Benefits
 - Easier maintenance
 - Simpler migration to backend APIs
 - Better separation of concerns
+
+---
+
+# Recent Architecture Updates
+
+## Pricing Architecture
+
+Pricing information has been moved into:
+
+```text
+constants/pricing.ts
+```
+
+The Pricing component renders plans dynamically using `.map()`, making it easy to add, remove, or modify plans without changing component logic.
+
+---
+
+## Navigation Architecture
+
+Navigation links are now stored in:
+
+```text
+constants/navLinks.ts
+```
+
+The Navbar renders navigation dynamically from the constants layer instead of hardcoded JSX.
+
+Benefits:
+
+- Centralized navigation
+- Easier maintenance
+- Scalable as more pages are added
+
+---
+
+## Footer Architecture
+
+Footer navigation is stored in:
+
+```text
+constants/footerLinks.ts
+```
+
+This keeps presentation separated from application data and follows the same architecture used throughout the landing page.
+
+---
+
+## Interactive Components
+
+Navbar has been converted into a **Client Component**.
+
+Reason:
+
+It uses React state (`useState`) for the responsive mobile navigation menu.
+
+---
+
+## Reusable Component Improvements
+
+### Button
+
+Enhanced with:
+
+- Hover animations
+- Active press animation
+- Focus ring
+- Improved transitions
+
+---
+
+### Card
+
+Enhanced with:
+
+- Explicit foreground color
+- Improved transitions
+- Better extensibility through `className`
+
+---
+
+## Landing Page Design Pattern
+
+The landing page consistently follows the architecture:
+
+```
+Data
+    ↓
+Constants
+    ↓
+Reusable Components
+    ↓
+Rendered UI
+```
+
+This pattern allows future replacement of static constants with backend API responses while keeping the UI components unchanged.
