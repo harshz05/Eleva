@@ -13,17 +13,17 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    "rounded-lg px-5 py-3 font-medium transition duration-200";
+    "rounded-lg px-5 py-3 font-medium transition-all duration-300 hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2";
 
   const variants = {
     primary:
-      "bg-blue-600 text-white hover:bg-blue-700",
+      "bg-blue-600 text-white shadow-md hover:bg-blue-700 hover:shadow-lg",
 
     secondary:
-      "bg-slate-100 text-slate-900 hover:bg-slate-200",
+      "bg-slate-100 text-slate-900 shadow-sm hover:bg-slate-200 hover:shadow-md",
 
     outline:
-      "border border-slate-300 hover:bg-slate-100",
+      "border border-slate-300 bg-transparent text-slate-900 hover:bg-slate-100",
   };
 
   return (

@@ -4,7 +4,7 @@ import Features from "@/components/home/Features";
 import Footer from "@/components/layout/Footer";
 import Statistics from "@/components/home/Statistics";
 import Testimonials from "@/components/home/Testimonials";
-
+import Pricing from "@/components/home/Pricing";
 
 export default function Home() {
   return (
@@ -19,6 +19,8 @@ export default function Home() {
       <Statistics />
 
       <Testimonials />
+
+      <Pricing />
 
       <Footer />
 
