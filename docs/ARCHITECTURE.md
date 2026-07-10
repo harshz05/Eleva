@@ -164,3 +164,20 @@ Rendered UI
 ```
 
 This pattern allows future replacement of static constants with backend API responses while keeping the UI components unchanged.
+
+## Authentication Flow
+
+Landing Page
+        │
+        ▼
+ Sign Up / Sign In (Clerk)
+        │
+        ▼
+ Authentication
+        │
+        ▼
+ Protected Dashboard
+        │
+        ├── Sidebar
+        ├── Topbar
+        └── Dashboard Content

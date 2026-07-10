@@ -51,6 +51,12 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [ ] Signup
 - [ ] Protected Routes
 - [ ] User Profile
+- [x] Install Clerk
+- [x] Configure Environment Variables
+- [x] Add Clerk Provider
+- [x] Create Authentication Pages
+- [x] Protect Dashboard Routes
+- [x] Dashboard Shell
 
 ---
 
@@ -61,6 +67,12 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [ ] Interview History
 - [ ] Progress Dashboard
 - [ ] User Settings
+- [ ] User Profile
+- [ ] Real Statistics
+- [ ] Interview History
+- [ ] Resume Analysis
+- [ ] DSA Tracker
+- [ ] Settings
 
 ---
 

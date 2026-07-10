@@ -191,3 +191,70 @@ Eleva now has the foundation of a reusable design system that will support futur
 
 Completed first major feature milestone:
 **Responsive Landing Page MVP**
+
+---
+
+# Sprint 3 — Authentication & Dashboard Foundation
+
+Date: July 2026
+
+## Completed
+
+### Authentication
+
+- Integrated Clerk Authentication.
+- Added ClerkProvider to Root Layout.
+- Created `.env.local` with Clerk Publishable and Secret Keys.
+- Added authentication middleware/proxy.
+- Created Sign In page.
+- Created Sign Up page.
+- Added protected Dashboard route.
+
+### Landing Page
+
+- Connected "Get Started" CTA to authentication flow.
+- Navbar button now redirects users to Sign Up.
+
+### Dashboard
+
+Created initial dashboard layout consisting of:
+
+- Sidebar
+- Topbar
+- Dashboard Content Area
+
+Current dashboard sections:
+
+- Mock Interviews
+- Resume Score
+- DSA Progress
+- Achievements
+
+### UI
+
+Created reusable dashboard components.
+
+Current folder structure:
+
+client/
+├── app/dashboard
+├── components/dashboard
+│ ├── Sidebar.tsx
+│ ├── Topbar.tsx
+│ ├── DashboardContent.tsx
+│ └── DashboardCard.tsx
+
+### Status
+
+Authentication is fully functional.
+
+Users can:
+
+- Sign Up
+- Verify email
+- Sign In
+- Access protected dashboard
+
+Dashboard currently displays placeholder statistics.
+
+Next sprint will focus on making the dashboard interactive.
