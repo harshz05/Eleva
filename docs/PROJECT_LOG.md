@@ -308,3 +308,50 @@ Dashboard now renders 4 stat cards from a typed mock data layer. Sidebar links t
 ## Status
 
 Sprint 5 complete. Dashboard now has: dynamic data-driven stat cards, a fully working sidebar with no dead links, and a real Profile page. All remaining dashboard sections (Interviews, Resume, DSA, Analytics, Settings) are stubbed and ready for their own dedicated sprints per the roadmap.
+
+---
+
+# Sprint 6 — Mock Interview Module (Text-Based, MVP)
+
+Date: July 12, 2026
+
+## Strategy Shift
+
+Pivoted to MVP-first development. Priority is a deployed, placement-ready v1.0 
+over full feature completeness. Target deploy date: **July 30, 2026**. 
+DSA Tracker deferred to v1.1 (post-launch) — will ship as "Coming Soon" 
+badge in v1.0 nav.
+
+## Objective
+
+Build a complete, clickable Interview module end-to-end on mock data, 
+with AI integration points clearly isolated for later wiring — no voice/webcam, 
+text-only per revised MVP scope.
+
+## Completed
+
+- Extended `types/interview.ts` — `InterviewSession`, `InterviewQuestion`, 
+  `InterviewType`, `InterviewStatus`, `NewInterviewInput`.
+- Built mock question bank in `constants/interviewData.ts` (`generateMockQuestions`).
+- Extended `lib/interviews.ts` seam with in-memory session store: 
+  `getInterviewSessions`, `getInterviewSession`, `createInterviewSession`, 
+  `submitAnswer`, `completeInterview`.
+- Built `StartInterviewForm`, `InterviewHistoryCard`, `InterviewsPageClient`.
+- Built `InterviewSessionClient` — question-by-question answer flow.
+- Built `InterviewResults` — score + per-question feedback view.
+- Wired dynamic route `app/dashboard/interviews/[id]/page.tsx`.
+- Marked two seam points with `TODO(v1.0-AI)` for real OpenAI integration:
+  question generation and answer evaluation/scoring.
+
+## Engineering Concepts Learned
+
+- Dynamic routing (`[id]` segments) in App Router
+- Designing a mock seam that mirrors the shape of a future async AI call
+- Client-side in-memory store as a bridge before real backend/DB exists
+- Marking integration points explicitly (`TODO(v1.0-AI)`) for clean future handoff
+
+## Status
+
+Interview module is functionally complete on mock data: start → answer → 
+score → results → history. Next: Resume Analyzer frontend shell (same 
+pattern), per revised MVP roadmap.

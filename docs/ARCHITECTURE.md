@@ -189,6 +189,21 @@ Dashboard stats now follow the same Data → Constants → Components pattern us
 
 ---
 
+## Interview Module Data Architecture
+
+Follows the same Data → Constants → lib (seam) → Components → UI pattern.
+
+`lib/interviews.ts` currently backs an **in-memory session store** (not just 
+static mock data) since Interviews require writes (create session, submit 
+answer, complete). This is a temporary bridge — the store resets on reload — 
+until the real Postgres/Prisma backend replaces it with zero component changes.
+
+AI integration points are isolated and marked `TODO(v1.0-AI)`:
+- Question generation (`createInterviewSession`)
+- Answer evaluation + scoring (`completeInterview`)
+
+---
+
 ## Dashboard Route Structure
 
 All sidebar destinations now resolve to real pages under `app/dashboard/`:       

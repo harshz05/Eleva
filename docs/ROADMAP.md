@@ -112,3 +112,22 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [ ] Production Environment Variables
 - [ ] Custom Domain
 - [ ] Portfolio Integration
+
+---
+
+# Version 1.0 — Placement MVP (Revised Scope, target: July 30, 2026)
+
+## In Scope
+- [x] Auth (Clerk) + protected routes
+- [x] Dashboard (stats, profile, nav)
+- [x] Interview module — text-based only (question gen, answer, AI eval, history)
+- [ ] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions
+- [ ] Backend — Express + Prisma + PostgreSQL, real auth-linked data
+- [ ] Deployment — Vercel, env config, production build
+
+## Deferred to v1.1+ (Coming Soon badge in v1.0)
+- [ ] DSA Tracker
+- [ ] Voice / webcam interviews
+- [ ] Speech-to-text, confidence/emotion detection
+- [ ] Advanced AI analytics, personalized coaching
+- [ ] Notifications, email reminders
