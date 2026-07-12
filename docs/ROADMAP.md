@@ -68,7 +68,7 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [ ] Progress Dashboard
 - [ ] User Settings
 - [ ] User Profile
-- [ ] Real Statistics
+- [x] Real Statistics
 - [ ] Interview History
 - [ ] Resume Analysis
 - [ ] DSA Tracker

@@ -258,3 +258,33 @@ Users can:
 Dashboard currently displays placeholder statistics.
 
 Next sprint will focus on making the dashboard interactive.
+
+---
+
+# Sprint 5 — Dashboard Data Architecture
+
+Date: July 2026
+
+## Objective
+
+Replace static placeholder dashboard cards with a typed, data-driven rendering pipeline that's ready to swap mock data for a real backend later with zero component changes.
+
+## Completed
+
+- Created `types/dashboard.ts` — `DashboardStat`, `DashboardActivity`, `DashboardData` interfaces.
+- Created `constants/dashboardData.ts` — mock data implementing those types.
+- Created `lib/dashboard.ts` — `getDashboardStats()`, the single data-access seam for the dashboard.
+- Refactored `DashboardCard.tsx` to accept `label`/`icon name`/`trend` instead of hardcoded `title`/JSX icon.
+- Refactored `app/dashboard/page.tsx` into a Server Component that awaits `getDashboardStats()` and renders cards via `.map()`.
+
+## Engineering Concepts Learned
+
+- Data-access layer pattern (seam between UI and data source)
+- Server Components fetching data directly with `await`, no `useEffect`
+- Icon-name-to-component mapping for JSX-free data files
+- Designing types before implementation ("types first")
+
+## Status
+
+Dashboard now renders 4 stat cards from a typed mock data layer. Sidebar links to `/dashboard/interviews`, `/dashboard/resume`, `/dashboard/dsa`, `/dashboard/analytics`, `/dashboard/settings` still 404 — next sprint session will add stub routes and the User Profile page.
+

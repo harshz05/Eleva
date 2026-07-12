@@ -181,3 +181,9 @@ Landing Page
         ├── Sidebar
         ├── Topbar
         └── Dashboard Content
+---
+
+## Dashboard Data Architecture
+
+Dashboard stats now follow the same Data → Constants → Components pattern used on the landing page, extended with a typed data-access layer:
+        
