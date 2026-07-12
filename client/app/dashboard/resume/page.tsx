@@ -1,10 +1,13 @@
-import ComingSoon from "@/components/dashboard/ComingSoon";
+import ResumePageClient from "@/components/resume/ResumePageClient";
 
 export default function ResumePage() {
   return (
-    <ComingSoon
-      title="Resume Analyzer"
-      description="Upload your resume for AI-powered analysis, ATS scoring, and improvement suggestions."
-    />
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">Resume Analyzer</h1>
+        <p className="mt-2 text-slate-500">Upload your resume for AI-powered feedback.</p>
+      </div>
+      <ResumePageClient />
+    </>
   );
 }

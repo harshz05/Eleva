@@ -1,0 +1,2980 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+client/
+  app/
+    dashboard/
+      analytics/
+        page.tsx
+      dsa/
+        page.tsx
+      interviews/
+        [id]/
+          page.tsx
+        page.tsx
+      profile/
+        page.tsx
+      resume/
+        page.tsx
+      settings/
+        page.tsx
+      layout.tsx
+      page.tsx
+    sign-in/
+      [[...sign-in]]/
+        page.tsx
+    sign-up/
+      [[...sign-up]]/
+        page.tsx
+    favicon.ico
+    globals.css
+    layout.tsx
+    page.tsx
+  components/
+    dashboard/
+      ComingSoon.tsx
+      DashboardCard.tsx
+      DashboardLayout.tsx
+      Sidebar.tsx
+      Topbar.tsx
+    home/
+      Features.tsx
+      Hero.tsx
+      Pricing.tsx
+      Statistics.tsx
+      Testimonials.tsx
+    interviews/
+      InterviewHistoryCard.tsx
+      InterviewResults.tsx
+      InterviewSessionClient.tsx
+      InterviewsPageClient.tsx
+      StartInterviewForm.tsx
+    layout/
+      Footer.tsx
+      Navbar.tsx
+    resume/
+      ResumeAnalysisView.tsx
+      ResumePageClient.tsx
+      ResumeUpload.tsx
+    ui/
+      Badge.tsx
+      Button.tsx
+      Card.tsx
+      Container.tsx
+      SectionHeading.tsx
+  constants/
+    dashboardData.ts
+    footerLinks.ts
+    interviewData.ts
+    navLinks.ts
+    pricing.ts
+    resumeData.ts
+    statistics.ts
+    testimonials.ts
+  lib/
+    dashboard.ts
+    interviews.ts
+    resume.ts
+  public/
+    file.svg
+    globe.svg
+    next.svg
+    vercel.svg
+    window.svg
+  types/
+    dashboard.ts
+    interviews.ts
+    resume.ts
+  .gitignore
+  eslint.config.mjs
+  next.config.ts
+  package.json
+  postcss.config.mjs
+  proxy.ts
+  tsconfig.json
+docs/
+  ARCHITECTURE.md
+  PROJECT_LOG.md
+  ROADMAP.md
+.gitignore
+README.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="client/components/interviews/StartInterviewForm.tsx">
+"use client";
+
+import { useState } from "react";
+import { InterviewType, NewInterviewInput } from "@/types/interviews";
+
+const ROLE_OPTIONS = ["SDE Intern", "ML Intern", "Frontend Intern", "Backend Intern"];
+const TYPE_OPTIONS: { value: InterviewType; label: string }[] = [
+  { value: "dsa", label: "DSA" },
+  { value: "behavioral", label: "Behavioral" },
+  { value: "technical", label: "Technical" },
+  { value: "system_design", label: "System Design" },
+];
+
+interface StartInterviewFormProps {
+  onStart: (input: NewInterviewInput) => void;
+  isCreating: boolean;
+}
+
+export default function StartInterviewForm({ onStart, isCreating }: StartInterviewFormProps) {
+  const [role, setRole] = useState(ROLE_OPTIONS[0]);
+  const [company, setCompany] = useState("");
+  const [type, setType] = useState<InterviewType>("dsa");
+
+  const handleSubmit = () => {
+    onStart({ role, company: company.trim() || undefined, type });
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-slate-900">Start a Mock Interview</h2>
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        >
+          {ROLE_OPTIONS.map((r) => (
+            <option key={r} value={r}>{r}</option>
+          ))}
+        </select>
+        <input
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+          placeholder="Company (optional)"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value as InterviewType)}
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        >
+          {TYPE_OPTIONS.map((t) => (
+            <option key={t.value} value={t.value}>{t.label}</option>
+          ))}
+        </select>
+      </div>
+      <button
+        onClick={handleSubmit}
+        disabled={isCreating}
+        className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+      >
+        {isCreating ? "Starting..." : "Start Interview"}
+      </button>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/resume/ResumeAnalysisView.tsx">
+import { Resume } from "@/types/resume";
+
+const categoryStyles: Record<string, string> = {
+  formatting: "bg-purple-100 text-purple-700",
+  content: "bg-blue-100 text-blue-700",
+  keywords: "bg-amber-100 text-amber-700",
+  structure: "bg-green-100 text-green-700",
+};
+
+export default function ResumeAnalysisView({ resume }: { resume: Resume }) {
+  if (resume.status === "processing") {
+    return <p className="text-sm text-slate-500">Analyzing {resume.fileName}...</p>;
+  }
+  if (!resume.analysis) return null;
+
+  const { summary, atsScore, suggestions } = resume.analysis;
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-slate-500">{resume.fileName}</p>
+            <p className="mt-1 text-xs text-slate-400">
+              Uploaded {new Date(resume.uploadedAt).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-slate-500">ATS Score</p>
+            <p className="text-3xl font-bold text-blue-600">{atsScore}</p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-slate-600">{summary}</p>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-lg font-semibold text-slate-900">Suggestions</h3>
+        <div className="space-y-3">
+          {suggestions.map((s) => (
+            <div key={s.id} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
+              <span className={`rounded-full px-2 py-1 text-xs font-medium ${categoryStyles[s.category]}`}>
+                {s.category}
+              </span>
+              <p className="text-sm text-slate-700">{s.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/resume/ResumePageClient.tsx">
+"use client";
+
+import { useEffect, useState } from "react";
+import { getCurrentResume } from "@/lib/resume";
+import { Resume } from "@/types/resume";
+import ResumeUpload from "./ResumeUpload";
+import ResumeAnalysisView from "./ResumeAnalysisView";
+
+export default function ResumePageClient() {
+  const [resume, setResume] = useState<Resume | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getCurrentResume().then((r) => {
+      setResume(r);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <p className="text-sm text-slate-500">Loading...</p>;
+
+  return (
+    <div className="space-y-6">
+      <ResumeUpload onUploaded={setResume} />
+      {resume && (
+        <>
+          <p className="text-sm text-slate-500">
+            Uploading a new file will replace your current resume.
+          </p>
+          <ResumeAnalysisView resume={resume} />
+        </>
+      )}
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/resume/ResumeUpload.tsx">
+"use client";
+
+import { useRef, useState } from "react";
+import { uploadResume } from "@/lib/resume";
+import { Resume } from "@/types/resume";
+import { UploadCloud } from "lucide-react";
+
+interface ResumeUploadProps {
+  onUploaded: (resume: Resume) => void;
+}
+
+export default function ResumeUpload({ onUploaded }: ResumeUploadProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File) => {
+    if (file.type !== "application/pdf") {
+      setError("Please upload a PDF file.");
+      return;
+    }
+    setError(null);
+    setIsUploading(true);
+    const resume = await uploadResume(file);
+    setIsUploading(false);
+    onUploaded(resume);
+  };
+
+  return (
+    <div
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files?.[0];
+        if (file) handleFile(file);
+      }}
+      className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center transition hover:border-blue-300"
+    >
+      <UploadCloud className="text-slate-400" size={36} />
+      <p className="mt-3 text-sm text-slate-600">
+        {isUploading ? "Uploading & analyzing..." : "Drag and drop your resume PDF, or"}
+      </p>
+      {!isUploading && (
+        <button
+          onClick={() => inputRef.current?.click()}
+          className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          Browse Files
+        </button>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/pdf"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+        }}
+      />
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+    </div>
+  );
+}
+</file>
+
+<file path="client/constants/resumeData.ts">
+import { ResumeAnalysis } from "@/types/resume";
+
+// TODO(v1.0-AI): replace with real AI-generated feedback from parsed resume text.
+export const mockResumeAnalysis: ResumeAnalysis = {
+  summary:
+    "Your resume is clear and well-structured, with strong technical project details. A few tweaks to keyword coverage and formatting consistency would improve ATS compatibility.",
+  atsScore: 76,
+  suggestions: [
+    { id: "s1", category: "keywords", text: "Add role-specific keywords from the job description (e.g. 'REST API', 'CI/CD') to improve ATS matching." },
+    { id: "s2", category: "formatting", text: "Use consistent bullet point punctuation throughout all sections." },
+    { id: "s3", category: "structure", text: "Move your most relevant project (Eleva) higher, closer to the top of the page." },
+    { id: "s4", category: "content", text: "Quantify achievements where possible — add metrics or outcomes to project bullets." },
+  ],
+};
+</file>
+
+<file path="client/lib/interviews.ts">
+import { mockInterviewSessions, generateMockQuestions } from "@/constants/interviewData";
+import { InterviewSession, NewInterviewInput } from "@/types/interviews";
+
+// In-memory store simulating a DB until the real backend lands.
+// Seeded once from mock data; mutated as sessions are created/updated.
+const sessionStore: InterviewSession[] = [...mockInterviewSessions];
+
+export async function getInterviewSessions(): Promise<InterviewSession[]> {
+  return sessionStore;
+}
+
+export async function getInterviewSession(id: string): Promise<InterviewSession | undefined> {
+  return sessionStore.find((s) => s.id === id);
+}
+
+export async function createInterviewSession(
+  input: NewInterviewInput
+): Promise<InterviewSession> {
+  // TODO(v1.0-AI): replace generateMockQuestions with a real AI question-gen call.
+  const session: InterviewSession = {
+    id: `int-${Date.now()}`,
+    role: input.role,
+    company: input.company,
+    type: input.type,
+    status: "in_progress",
+    createdAt: new Date().toISOString(),
+    questions: generateMockQuestions(input.type),
+  };
+  sessionStore.unshift(session);
+  return session;
+}
+
+export async function submitAnswer(
+  sessionId: string,
+  questionId: string,
+  answer: string
+): Promise<InterviewSession | undefined> {
+  const session = sessionStore.find((s) => s.id === sessionId);
+  if (!session) return undefined;
+  const question = session.questions.find((q) => q.id === questionId);
+  if (question) question.answer = answer;
+  return session;
+}
+
+export async function completeInterview(sessionId: string): Promise<InterviewSession | undefined> {
+  const session = sessionStore.find((s) => s.id === sessionId);
+  if (!session) return undefined;
+  // TODO(v1.0-AI): replace with a real AI evaluation call (per-question feedback + overall score).
+  session.status = "completed";
+  session.completedAt = new Date().toISOString();
+  session.score = Math.floor(Math.random() * 21) + 70; // mock 70-90
+  session.questions.forEach((q) => {
+    q.feedback = q.answer
+      ? "Solid structure — consider adding a concrete example next time."
+      : "No answer submitted.";
+  });
+  return session;
+}
+</file>
+
+<file path="client/lib/resume.ts">
+import { mockResumeAnalysis } from "@/constants/resumeData";
+import { Resume } from "@/types/resume";
+
+// In-memory store, same bridge pattern as lib/interviews.ts — replaced by
+// real Postgres/Prisma + file storage once backend lands.
+let currentResume: Resume | null = null;
+
+export async function getCurrentResume(): Promise<Resume | null> {
+  return currentResume;
+}
+
+export async function uploadResume(file: File): Promise<Resume> {
+  // TODO(v1.0-backend): actually store the file (S3/Cloudinary or DB blob)
+  // TODO(v1.0-AI): parse real PDF text and run it through an AI feedback call
+  const resume: Resume = {
+    id: `res-${Date.now()}`,
+    fileName: file.name,
+    uploadedAt: new Date().toISOString(),
+    status: "processing",
+  };
+  currentResume = resume;
+
+  // simulate async processing delay
+  await new Promise((r) => setTimeout(r, 1200));
+  currentResume = { ...resume, status: "analyzed", analysis: mockResumeAnalysis };
+  return currentResume;
+}
+</file>
+
+<file path="client/types/interviews.ts">
+export type InterviewType = "dsa" | "behavioral" | "system_design" | "technical";
+export type InterviewStatus = "not_started" | "in_progress" | "completed";
+
+export interface InterviewQuestion {
+  id: string;
+  text: string;
+  type: InterviewType;
+  answer?: string;
+  feedback?: string;
+}
+
+export interface InterviewSession {
+  id: string;
+  role: string;
+  company?: string;
+  type: InterviewType;
+  status: InterviewStatus;
+  createdAt: string;
+  completedAt?: string;
+  durationSeconds?: number;
+  score?: number;
+  questions: InterviewQuestion[];
+}
+
+export interface NewInterviewInput {
+  role: string;
+  company?: string;
+  type: InterviewType;
+}
+</file>
+
+<file path="client/types/resume.ts">
+export interface ResumeSuggestion {
+  id: string;
+  category: "formatting" | "content" | "keywords" | "structure";
+  text: string;
+}
+
+export interface ResumeAnalysis {
+  summary: string;
+  atsScore: number; // 0-100, simple mock score for MVP — no advanced algorithm
+  suggestions: ResumeSuggestion[];
+}
+
+export interface Resume {
+  id: string;
+  fileName: string;
+  uploadedAt: string;
+  status: "processing" | "analyzed" | "failed";
+  analysis?: ResumeAnalysis;
+}
+</file>
+
+<file path="client/app/dashboard/analytics/page.tsx">
+import ComingSoon from "@/components/dashboard/ComingSoon";
+
+export default function AnalyticsPage() {
+  return (
+    <ComingSoon
+      title="Analytics"
+      description="Visual insights into your interview performance, weak topics, and preparation trends."
+    />
+  );
+}
+</file>
+
+<file path="client/app/dashboard/dsa/page.tsx">
+import ComingSoon from "@/components/dashboard/ComingSoon";
+
+export default function DsaPage() {
+  return (
+    <ComingSoon
+      title="DSA Roadmap"
+      description="Track your Data Structures & Algorithms progress across topics and difficulty levels."
+    />
+  );
+}
+</file>
+
+<file path="client/app/dashboard/interviews/[id]/page.tsx">
+import InterviewSessionClient from "@/components/interviews/InterviewSessionClient";
+
+export default function InterviewSessionPage({ params }: { params: { id: string } }) {
+  return <InterviewSessionClient sessionId={params.id} />;
+}
+</file>
+
+<file path="client/app/dashboard/interviews/page.tsx">
+import ComingSoon from "@/components/dashboard/ComingSoon";
+
+export default function InterviewsPage() {
+  return (
+    <ComingSoon
+      title="Mock Interviews"
+      description="AI-powered mock interview sessions are coming soon. You'll be able to practice with AI-generated questions and get instant feedback."
+    />
+  );
+}
+</file>
+
+<file path="client/app/dashboard/profile/page.tsx">
+import { UserProfile } from "@clerk/nextjs";
+
+export default function ProfilePage() {
+  return (
+    <div className="flex justify-center">
+      <UserProfile
+        routing="hash"
+        appearance={{
+          elements: {
+            rootBox: "w-full",
+            card: "shadow-sm border border-slate-200",
+          },
+        }}
+      />
+    </div>
+  );
+}
+</file>
+
+<file path="client/app/dashboard/resume/page.tsx">
+import ResumePageClient from "@/components/resume/ResumePageClient";
+
+export default function ResumePage() {
+  return (
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">Resume Analyzer</h1>
+        <p className="mt-2 text-slate-500">Upload your resume for AI-powered feedback.</p>
+      </div>
+      <ResumePageClient />
+    </>
+  );
+}
+</file>
+
+<file path="client/app/dashboard/settings/page.tsx">
+import ComingSoon from "@/components/dashboard/ComingSoon";
+
+export default function SettingsPage() {
+  return (
+    <ComingSoon
+      title="Settings"
+      description="Manage your account preferences and notification settings."
+    />
+  );
+}
+</file>
+
+<file path="client/app/dashboard/layout.tsx">
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+
+export default async function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  return (
+    <DashboardLayout>
+      {children}
+    </DashboardLayout>
+  );
+}
+</file>
+
+<file path="client/app/sign-in/[[...sign-in]]/page.tsx">
+import { SignIn } from "@clerk/nextjs";
+
+export default function Page() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <SignIn />
+    </div>
+  );
+}
+</file>
+
+<file path="client/app/sign-up/[[...sign-up]]/page.tsx">
+import { SignUp } from "@clerk/nextjs";
+
+export default function Page() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <SignUp />
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/dashboard/ComingSoon.tsx">
+interface ComingSoonProps {
+  title: string;
+  description: string;
+}
+
+export default function ComingSoon({ title, description }: ComingSoonProps) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white py-24 text-center">
+      <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
+      <p className="mt-2 max-w-md text-slate-500">{description}</p>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/dashboard/DashboardLayout.tsx">
+import { ReactNode } from "react";
+
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
+
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
+
+export default function DashboardLayout({
+  children,
+}: DashboardLayoutProps) {
+  return (
+    <div className="flex min-h-screen bg-slate-100">
+      <Sidebar />
+
+      <div className="flex flex-1 flex-col">
+        <Topbar />
+
+        <main className="flex-1 p-8">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/dashboard/Topbar.tsx">
+import { UserButton } from "@clerk/nextjs";
+
+export default function Topbar() {
+  return (
+    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-5">
+      <div>
+        <h2 className="text-2xl font-bold">
+          Dashboard
+        </h2>
+
+        <p className="text-slate-500">
+           Continue your placement preparation journey.
+        </p>
+      </div>
+
+      <UserButton
+        afterSignOutUrl="/"
+      />
+    </header>
+  );
+}
+</file>
+
+<file path="client/components/home/Pricing.tsx">
+import Container from "../ui/Container";
+import SectionHeading from "../ui/SectionHeading";
+import Card from "../ui/Card";
+import Button from "../ui/Button";
+import Badge from "../ui/Badge";
+
+import { pricingPlans } from "@/constants/pricing";
+import { Check } from "lucide-react";
+
+export default function Pricing() {
+  return (
+    <section
+  id="pricing"
+  className="bg-slate-100 py-20 text-slate-900"
+>
+      <Container>
+        <SectionHeading
+          title="Simple Pricing"
+          subtitle="Choose the plan that helps you ace your next interview."
+        />
+
+        <div className="mt-12 grid gap-8 md:grid-cols-2">
+          {pricingPlans.map((plan) => (
+            <Card
+              key={plan.name}
+             className={`flex flex-col transition-all duration-300 ${
+  plan.popular
+    ? "border-blue-600 shadow-xl scale-105 hover:scale-110"
+    : "hover:-translate-y-1 hover:shadow-xl"
+}`}
+            >
+              {plan.popular && (
+                <div className="mb-4">
+                  <Badge>Most Popular</Badge>
+                </div>
+              )}
+
+              <h3 className="text-2xl font-bold">
+                {plan.name}
+              </h3>
+
+              <h4 className="mt-4 text-4xl font-bold text-blue-600">
+                {plan.price}
+              </h4>
+
+              <p className="mt-3 text-slate-600">
+                {plan.description}
+              </p>
+
+              <ul className="mt-8 space-y-4">
+                {plan.features.map((feature) => (
+                  <li
+                    key={feature}
+                    className="flex items-center gap-3"
+                  >
+                    <Check className="h-5 w-5 text-green-500" />
+
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button className="mt-8 w-full">
+                {plan.popular ? "Upgrade to Pro" : "Start Free"}
+              </Button>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+</file>
+
+<file path="client/components/home/Testimonials.tsx">
+import Card from "@/components/ui/Card";
+import Container from "@/components/ui/Container";
+import SectionHeading from "@/components/ui/SectionHeading";
+import { Star } from "lucide-react";
+import { testimonials } from "@/constants/testimonials";
+
+
+export default function Testimonials() {
+  return (
+    <section className="py-24">
+      <Container>
+        <SectionHeading
+          title="Loved by Students"
+          subtitle="Thousands of aspiring engineers trust Eleva to prepare for technical interviews."
+        />
+
+        <div className="grid gap-8 md:grid-cols-3">
+          {testimonials.map(({ name, role, quote }) => (
+            <Card key={name}>
+              <div className="mb-4 flex gap-1 text-yellow-500">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Star
+                    key={index}
+                    size={18}
+                    fill="currentColor"
+                  />
+                ))}
+              </div>
+
+              <p className="italic text-slate-600">
+                "{quote}"
+              </p>
+
+              <div className="mt-6">
+                <h3 className="font-semibold">
+                  {name}
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  {role}
+                </p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+</file>
+
+<file path="client/components/interviews/InterviewHistoryCard.tsx">
+import Link from "next/link";
+import { InterviewSession } from "@/types/interviews";
+
+const statusStyles: Record<InterviewSession["status"], string> = {
+  completed: "bg-green-100 text-green-700",
+  in_progress: "bg-amber-100 text-amber-700",
+  not_started: "bg-slate-100 text-slate-500",
+};
+
+export default function InterviewHistoryCard({ session }: { session: InterviewSession }) {
+  return (
+    <Link
+      href={`/dashboard/interviews/${session.id}`}
+      className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 transition hover:border-blue-300"
+    >
+      <div>
+        <p className="font-medium text-slate-900">
+          {session.role}{session.company ? ` · ${session.company}` : ""}
+        </p>
+        <p className="mt-1 text-sm text-slate-500">
+          {new Date(session.createdAt).toLocaleDateString()} · {session.type.replace("_", " ")}
+        </p>
+      </div>
+      <div className="flex items-center gap-3">
+        {typeof session.score === "number" && (
+          <span className="text-sm font-semibold text-slate-700">{session.score}%</span>
+        )}
+        <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusStyles[session.status]}`}>
+          {session.status.replace("_", " ")}
+        </span>
+      </div>
+    </Link>
+  );
+}
+</file>
+
+<file path="client/components/interviews/InterviewResults.tsx">
+import Link from "next/link";
+import { InterviewSession } from "@/types/interviews";
+
+export default function InterviewResults({ session }: { session: InterviewSession }) {
+  return (
+    <div className="mx-auto max-w-2xl">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+        <p className="text-sm text-slate-500">Overall Score</p>
+        <p className="mt-1 text-4xl font-bold text-blue-600">{session.score}%</p>
+      </div>
+
+      <div className="mt-6 space-y-4">
+        {session.questions.map((q, i) => (
+          <div key={q.id} className="rounded-xl border border-slate-200 bg-white p-4">
+            <p className="text-sm font-medium text-slate-900">Q{i + 1}. {q.text}</p>
+            <p className="mt-2 text-sm text-slate-600">
+              <span className="font-medium text-slate-500">Your answer: </span>
+              {q.answer || "—"}
+            </p>
+            <p className="mt-2 text-sm text-blue-600">{q.feedback}</p>
+          </div>
+        ))}
+      </div>
+
+      <Link
+        href="/dashboard/interviews"
+        className="mt-6 inline-block rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
+      >
+        Back to Interviews
+      </Link>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/interviews/InterviewSessionClient.tsx">
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getInterviewSession, submitAnswer, completeInterview } from "@/lib/interviews";
+import { InterviewSession } from "@/types/interviews";
+import InterviewResults from "./InterviewResults";
+
+export default function InterviewSessionClient({ sessionId }: { sessionId: string }) {
+  const router = useRouter();
+  const [session, setSession] = useState<InterviewSession | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [draft, setDraft] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    getInterviewSession(sessionId).then((s) => {
+      if (!s) return router.replace("/dashboard/interviews");
+      setSession(s);
+      setLoading(false);
+    });
+  }, [sessionId, router]);
+
+  if (loading || !session) return <p className="text-sm text-slate-500">Loading interview...</p>;
+
+  if (session.status === "completed") {
+    return <InterviewResults session={session} />;
+  }
+
+  const question = session.questions[currentIndex];
+  const isLast = currentIndex === session.questions.length - 1;
+
+  const handleNext = async () => {
+    setSubmitting(true);
+    await submitAnswer(session.id, question.id, draft);
+    setDraft("");
+
+    if (isLast) {
+      const finished = await completeInterview(session.id);
+      if (finished) setSession(finished);
+    } else {
+      setCurrentIndex((i) => i + 1);
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="mx-auto max-w-2xl">
+      <p className="text-sm text-slate-500">
+        Question {currentIndex + 1} of {session.questions.length}
+      </p>
+      <h2 className="mt-2 text-xl font-semibold text-slate-900">{question.text}</h2>
+
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        rows={8}
+        placeholder="Type your answer..."
+        className="mt-4 w-full rounded-xl border border-slate-300 p-4 text-sm"
+      />
+
+      <button
+        onClick={handleNext}
+        disabled={submitting || draft.trim().length === 0}
+        className="mt-4 rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+      >
+        {submitting ? "Submitting..." : isLast ? "Finish Interview" : "Next Question"}
+      </button>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/interviews/InterviewsPageClient.tsx">
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getInterviewSessions, createInterviewSession } from "@/lib/interviews";
+import { InterviewSession, NewInterviewInput } from "@/types/interviews";
+import StartInterviewForm from "./StartInterviewForm";
+import InterviewHistoryCard from "./InterviewHistoryCard";
+
+export default function InterviewsPageClient() {
+  const router = useRouter();
+  const [sessions, setSessions] = useState<InterviewSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    getInterviewSessions().then((data) => {
+      setSessions(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const handleStart = async (input: NewInterviewInput) => {
+    setIsCreating(true);
+    const session = await createInterviewSession(input);
+    setIsCreating(false);
+    router.push(`/dashboard/interviews/${session.id}`);
+  };
+
+  if (loading) return <p className="text-sm text-slate-500">Loading interviews...</p>;
+
+  return (
+    <div className="space-y-6">
+      <StartInterviewForm onStart={handleStart} isCreating={isCreating} />
+
+      <div>
+        <h2 className="mb-3 text-lg font-semibold text-slate-900">History</h2>
+        {sessions.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center">
+            <p className="text-slate-500">No interviews yet. Start your first one above.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sessions.map((s) => (
+              <InterviewHistoryCard key={s.id} session={s} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/ui/Container.tsx">
+import { ReactNode } from "react";
+
+interface ContainerProps {
+  children: ReactNode;
+}
+
+export default function Container({ children }: ContainerProps) {
+  return (
+    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      {children}
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/ui/SectionHeading.tsx">
+import { ReactNode } from "react";
+
+interface SectionHeadingProps {
+  title: string;
+  subtitle?: string;
+}
+
+export default function SectionHeading({
+  title,
+  subtitle,
+}: SectionHeadingProps) {
+  return (
+    <div className="mb-12 text-center">
+      <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+        {title}
+      </h2>
+
+      {subtitle && (
+        <p className="mx-auto mt-4 max-w-2xl text-slate-600">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+</file>
+
+<file path="client/constants/dashboardData.ts">
+import { DashboardData } from "@/types/dashboard";
+
+/**
+ * Mock dashboard data — mirrors the shape a future
+ * GET /api/dashboard endpoint will return.
+ * Replacing this with a real fetch later requires no
+ * component changes, only a change inside lib/dashboard.ts.
+ */
+export const mockDashboardData: DashboardData = {
+  stats: [
+    {
+      id: "mock-interviews",
+      label: "Mock Interviews",
+      value: "0",
+      icon: "Brain",
+    },
+    {
+      id: "resume-score",
+      label: "Resume Score",
+      value: "--",
+      icon: "FileText",
+    },
+    {
+      id: "dsa-progress",
+      label: "DSA Progress",
+      value: "0%",
+      icon: "Target",
+    },
+    {
+      id: "achievements",
+      label: "Achievements",
+      value: "0",
+      icon: "Trophy",
+    },
+  ],
+  recentActivity: [],
+};
+</file>
+
+<file path="client/constants/footerLinks.ts">
+export const quickLinks = [
+  {
+    name: "Features",
+    href: "#features",
+  },
+  {
+    name: "Pricing",
+    href: "#pricing",
+  },
+  {
+    name: "Testimonials",
+    href: "#testimonials",
+  },
+];
+
+export const resources = [
+  {
+    name: "Blog",
+    href: "#",
+  },
+  {
+    name: "FAQ",
+    href: "#",
+  },
+  {
+    name: "Contact",
+    href: "#",
+  },
+];
+</file>
+
+<file path="client/constants/interviewData.ts">
+import { InterviewSession, InterviewType } from "@/types/interviews";
+
+export const mockInterviewSessions: InterviewSession[] = [
+  {
+    id: "int-001",
+    role: "SDE Intern",
+    company: "Flipkart",
+    type: "dsa",
+    status: "completed",
+    createdAt: "2026-07-08T10:00:00.000Z",
+    completedAt: "2026-07-08T10:32:00.000Z",
+    durationSeconds: 1920,
+    score: 78,
+    questions: [
+      { id: "q1", text: "Find the longest palindromic substring.", type: "dsa" },
+      { id: "q2", text: "Design a rate limiter.", type: "system_design" },
+    ],
+  },
+];
+
+const QUESTION_BANK: Record<InterviewType, string[]> = {
+  dsa: [
+    "Explain your approach to finding duplicates in an array in O(n) time.",
+    "How would you detect a cycle in a linked list?",
+    "Walk through how you'd solve the two-sum problem efficiently.",
+  ],
+  behavioral: [
+    "Tell me about a time you disagreed with a teammate. How did you resolve it?",
+    "Describe a project you're proud of and your specific contribution.",
+    "How do you prioritize when you have multiple deadlines at once?",
+  ],
+  technical: [
+    "Explain the difference between SQL and NoSQL databases, and when you'd choose each.",
+    "What happens when you type a URL into a browser and hit enter?",
+    "How does garbage collection work in the language you're most comfortable with?",
+  ],
+  system_design: [
+    "How would you design a URL shortener?",
+    "Design a basic rate limiter for an API.",
+    "How would you scale a service that suddenly gets 100x traffic?",
+  ],
+};
+
+export function generateMockQuestions(type: InterviewType, count = 3) {
+  return QUESTION_BANK[type].slice(0, count).map((text, i) => ({
+    id: `q-${Date.now()}-${i}`,
+    text,
+    type,
+  }));
+}
+</file>
+
+<file path="client/constants/navLinks.ts">
+export const navLinks = [
+  {
+    name: "Features",
+    href: "#features",
+  },
+  {
+    name: "Statistics",
+    href: "#statistics",
+  },
+  {
+    name: "Testimonials",
+    href: "#testimonials",
+  },
+  {
+    name: "Pricing",
+    href: "#pricing",
+  },
+];
+</file>
+
+<file path="client/constants/pricing.ts">
+export interface PricingPlan {
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  popular: boolean;
+}
+
+export const pricingPlans: PricingPlan[] = [
+  {
+    name: "Free",
+    price: "₹0",
+    description: "Perfect for getting started with AI interview preparation.",
+    features: [
+      "5 AI interviews / month",
+      "Resume upload",
+      "Basic AI feedback",
+      "Interview history",
+    ],
+    popular: false,
+  },
+  {
+    name: "Pro",
+    price: "₹499/mo",
+    description: "Everything you need to crack placements with confidence.",
+    features: [
+      "Unlimited AI interviews",
+      "Detailed AI feedback",
+      "Resume-aware interviews",
+      "Behavioral + DSA rounds",
+      "Performance analytics",
+      "Priority AI model",
+    ],
+    popular: true,
+  },
+];
+</file>
+
+<file path="client/constants/statistics.ts">
+export const stats = [
+  {
+    value: "10K+",
+    label: "Mock Interviews",
+  },
+  {
+    value: "95%",
+    label: "Placement Success",
+  },
+  {
+    value: "24/7",
+    label: "Available Anytime",
+  },
+  {
+    value: "AI",
+    label: "Personalized Feedback",
+  },
+];
+</file>
+
+<file path="client/constants/testimonials.ts">
+export const testimonials = [
+  {
+    name: "Aryan Sharma",
+    role: "SDE Intern",
+    quote:
+      "Eleva helped me improve my confidence before placement interviews.",
+  },
+  {
+    name: "Priya Verma",
+    role: "Final Year CSE",
+    quote:
+      "The resume-based questions felt surprisingly realistic and challenging.",
+  },
+  {
+    name: "Aman Gupta",
+    role: "Software Engineer",
+    quote:
+      "The AI feedback highlighted mistakes that I never noticed before.",
+  },
+];
+</file>
+
+<file path="client/lib/dashboard.ts">
+import { mockDashboardData } from "@/constants/dashboardData";
+import { DashboardData } from "@/types/dashboard";
+
+export async function getDashboardStats(): Promise<DashboardData> {
+  return mockDashboardData;
+}
+</file>
+
+<file path="client/public/file.svg">
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+</file>
+
+<file path="client/public/globe.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+</file>
+
+<file path="client/public/next.svg">
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+</file>
+
+<file path="client/public/vercel.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+</file>
+
+<file path="client/public/window.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+</file>
+
+<file path="client/types/dashboard.ts">
+/**
+ * Shape of a single dashboard stat card.
+ * icon is a Lucide icon *name* (string), not a JSX element —
+ * this keeps the constants file pure data, no JSX in .ts files.
+ */
+export interface DashboardStat {
+  id: string;
+  label: string;          // e.g. "Mock Interviews"
+  value: string;          // e.g. "12" or "78%" — string so we can show "--" placeholders too
+  icon: string;            // Lucide icon name, e.g. "Brain"
+  trend?: {
+    direction: "up" | "down" | "neutral";
+    value: string;        // e.g. "+12% this week"
+  };
+}
+
+/** A single recent-activity entry, for a future "Recent Activity" feed. */
+export interface DashboardActivity {
+  id: string;
+  type: "interview" | "resume" | "dsa" | "achievement";
+  title: string;
+  timestamp: string; // ISO date string
+  meta?: string;      // e.g. "Score: 82%"
+}
+
+/** Aggregate shape returned by getDashboardStats(). */
+export interface DashboardData {
+  stats: DashboardStat[];
+  recentActivity: DashboardActivity[];
+}
+</file>
+
+<file path="client/.gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+</file>
+
+<file path="client/eslint.config.mjs">
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;
+</file>
+
+<file path="client/next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+</file>
+
+<file path="client/postcss.config.mjs">
+const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+
+export default config;
+</file>
+
+<file path="client/proxy.ts">
+import { clerkMiddleware } from "@clerk/nextjs/server";
+
+export default clerkMiddleware();
+
+export const config = {
+  matcher: [
+    "/((?!_next|.*\\..*).*)",
+    "/",
+    "/(api|trpc)(.*)",
+  ],
+};
+</file>
+
+<file path="client/tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
+</file>
+
+<file path=".gitignore">
+
+</file>
+
+<file path="README.md">
+# Eleva
+
+An AI-powered placement preparation platform that helps students prepare for technical and behavioral interviews through personalized mock interviews, resume-aware questioning, AI-driven feedback, and long-term performance analytics.
+
+## Tech Stack
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- PostgreSQL (Planned)
+- Prisma (Planned)
+- OpenAI API (Planned)
+
+---
+
+Status:
+🚧 Under Development
+</file>
+
+<file path="client/app/dashboard/page.tsx">
+import DashboardCard from "@/components/dashboard/DashboardCard";
+import { getDashboardStats } from "@/lib/dashboard";
+
+export default async function DashboardPage() {
+  const { stats } = await getDashboardStats();
+
+  return (
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">
+          Welcome to Eleva 👋
+        </h1>
+        <p className="mt-2 text-slate-500">
+          Here's an overview of your placement preparation.
+        </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        {stats.map((stat) => (
+          <DashboardCard
+            key={stat.id}
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+            trend={stat.trend}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+</file>
+
+<file path="client/app/globals.css">
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+html {
+  scroll-behavior: smooth;
+}
+</file>
+
+<file path="client/app/layout.tsx">
+import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Geist, Geist_Mono } from "next/font/google";
+
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "Eleva",
+    template: "%s | Eleva",
+  },
+  description:
+    "AI-powered placement preparation platform with mock interviews, DSA roadmap, resume analysis and personalized feedback.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col"><ClerkProvider>
+          {children}
+        </ClerkProvider></body>
+    </html>
+  );
+}
+</file>
+
+<file path="client/components/dashboard/DashboardCard.tsx">
+import {
+  Brain,
+  FileText,
+  Target,
+  Trophy,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  LucideIcon,
+} from "lucide-react";
+
+const iconMap: Record<string, LucideIcon> = {
+  Brain,
+  FileText,
+  Target,
+  Trophy,
+};
+
+interface DashboardCardProps {
+  label: string;
+  value: string;
+  icon: string;
+  trend?: {
+    direction: "up" | "down" | "neutral";
+    value: string;
+  };
+}
+
+export default function DashboardCard({
+  label,
+  value,
+  icon,
+  trend,
+}: DashboardCardProps) {
+  const Icon = iconMap[icon];
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-slate-500">{label}</p>
+          <h3 className="mt-2 text-3xl font-bold text-slate-900">{value}</h3>
+
+          {trend && (
+            <div
+              className={`mt-2 flex items-center gap-1 text-sm ${
+                trend.direction === "up"
+                  ? "text-green-600"
+                  : trend.direction === "down"
+                  ? "text-red-600"
+                  : "text-slate-400"
+              }`}
+            >
+              {trend.direction === "up" && <TrendingUp size={14} />}
+              {trend.direction === "down" && <TrendingDown size={14} />}
+              {trend.direction === "neutral" && <Minus size={14} />}
+              <span>{trend.value}</span>
+            </div>
+          )}
+        </div>
+
+        {Icon && (
+          <div className="rounded-xl bg-blue-100 p-3 text-blue-600">
+            <Icon size={24} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/dashboard/Sidebar.tsx">
+import Link from "next/link";
+
+const links = [
+  { name: "Dashboard", href: "/dashboard" },
+  { name: "Profile", href: "/dashboard/profile" },
+  { name: "Mock Interviews", href: "/dashboard/interviews" },
+  { name: "Resume", href: "/dashboard/resume" },
+  { name: "DSA Roadmap", href: "/dashboard/dsa" },
+  { name: "Analytics", href: "/dashboard/analytics" },
+  { name: "Settings", href: "/dashboard/settings" },
+];
+
+export default function Sidebar() {
+  return (
+    <aside className="flex h-screen w-64 flex-col border-r border-slate-200 bg-white">
+      <div className="border-b border-slate-200 p-6">
+        <h1 className="text-2xl font-bold text-blue-600">Eleva</h1>
+      </div>
+
+      <nav className="flex flex-1 flex-col gap-2 p-4">
+        {links.map((link) => (
+          <Link
+            key={link.name}
+            href={link.href}
+            className="rounded-lg px-4 py-3 text-slate-700 transition hover:bg-blue-50 hover:text-blue-600"
+          >
+            {link.name}
+          </Link>
+        ))}
+      </nav>
+    </aside>
+  );
+}
+</file>
+
+<file path="client/components/home/Features.tsx">
+import Card from "@/components/ui/Card";
+import Container from "@/components/ui/Container";
+import SectionHeading from "@/components/ui/SectionHeading";
+
+const features = [
+  {
+    title: "Resume-Based Interviews",
+    description:
+      "AI generates interview questions based on your resume and projects.",
+  },
+  {
+    title: "Personalized Feedback",
+    description:
+      "Receive detailed feedback on technical answers and communication.",
+  },
+  {
+    title: "Progress Tracking",
+    description:
+      "Monitor your improvement through analytics and interview history.",
+  },
+];
+
+export default function Features() {
+  return (
+    <section id="features" className="py-20">
+      <Container>
+        <SectionHeading
+          title="Why Eleva?"
+          subtitle="Everything you need to prepare smarter, practice consistently, and improve with AI-powered insights."
+        />
+
+        <div className="grid gap-8 md:grid-cols-3">
+          {features.map(({ title, description }) => (
+            <Card key={title}>
+              <h3 className="mb-4 text-2xl font-semibold">
+                {title}
+              </h3>
+
+              <p className="text-slate-600">
+                {description}
+              </p>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+</file>
+
+<file path="client/components/layout/Footer.tsx">
+import Container from "../ui/Container";
+
+import {
+  quickLinks,
+  resources,
+} from "@/constants/footerLinks";
+
+export default function Footer() {
+  return (
+    <footer className="border-t border-slate-800 bg-black py-16 text-white">
+      <Container>
+        <div className="grid gap-12 md:grid-cols-4">
+          {/* Brand */}
+          <div>
+            <h2 className="text-3xl font-bold">Eleva</h2>
+
+            <p className="mt-4 text-slate-400">
+              AI-powered placement preparation platform helping students crack
+              technical interviews with confidence.
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold">
+              Quick Links
+            </h3>
+
+            <ul className="space-y-3">
+              {quickLinks.map((link) => (
+                <li key={link.name}>
+                  <a
+                    href={link.href}
+                    className="text-slate-400 transition-colors duration-300 hover:text-white"
+                  >
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold">
+              Resources
+            </h3>
+
+            <ul className="space-y-3">
+              {resources.map((link) => (
+                <li key={link.name}>
+                  <a
+                    href={link.href}
+                    className="text-slate-400 transition-colors duration-300 hover:text-white"
+                  >
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Connect */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold">
+              Connect
+            </h3>
+
+            <ul className="space-y-3">
+              <li>
+                <a
+                  href="https://github.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 transition-colors duration-300 hover:text-white"
+                >
+                  GitHub
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 transition-colors duration-300 hover:text-white"
+                >
+                  LinkedIn
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="https://x.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 transition-colors duration-300 hover:text-white"
+                >
+                  X (Twitter)
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-16 border-t border-slate-800 pt-8">
+          <p className="text-center text-sm text-slate-500">
+            © 2026 Eleva. All rights reserved.
+          </p>
+        </div>
+      </Container>
+    </footer>
+  );
+}
+</file>
+
+<file path="client/components/layout/Navbar.tsx">
+"use client";
+
+import { useState } from "react";
+
+import Container from "../ui/Container";
+
+import { Menu, X } from "lucide-react";
+
+import { navLinks } from "@/constants/navLinks";
+
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <nav className="sticky top-0 z-50 border-b border-slate-800 bg-black/80 backdrop-blur-md">
+      <Container>
+        <div className="flex h-20 items-center justify-between">
+
+          {/* Logo */}
+
+          <h1 className="cursor-pointer text-2xl font-bold transition-colors duration-300 hover:text-blue-400">
+            Eleva
+          </h1>
+
+          {/* Desktop Navigation */}
+
+          <div className="hidden items-center gap-8 md:flex">
+
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                className="text-slate-300 transition-colors duration-300 hover:text-blue-400"
+              >
+                {link.name}
+              </a>
+            ))}
+
+            <button className="rounded-lg bg-white px-5 py-2 font-medium text-black transition hover:bg-slate-200">
+              Get Started
+            </button>
+
+          </div>
+
+          {/* Mobile Button */}
+
+          <button
+            className="md:hidden"
+            onClick={() => setIsOpen((prev) => !prev)}
+          >
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+
+        </div>
+
+        {/* Mobile Menu */}
+
+        {isOpen && (
+          <div className="border-t border-slate-800 py-6 md:hidden">
+
+            <div className="flex flex-col gap-6">
+
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="text-slate-300 transition-colors hover:text-white"
+                >
+                  {link.name}
+                </a>
+              ))}
+
+              <button className="rounded-lg bg-white py-3 font-medium text-black">
+                Get Started
+              </button>
+
+            </div>
+
+          </div>
+        )}
+
+      </Container>
+    </nav>
+  );
+}
+</file>
+
+<file path="client/components/ui/Badge.tsx">
+import { ReactNode } from "react";
+
+interface BadgeProps {
+  children: ReactNode;
+}
+
+export default function Badge({ children }: BadgeProps) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-4 py-1 text-sm font-medium text-blue-700">
+      {children}
+    </span>
+  );
+}
+</file>
+
+<file path="client/components/ui/Button.tsx">
+import { ButtonHTMLAttributes, ReactNode } from "react";
+
+interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children: ReactNode;
+  variant?: "primary" | "secondary" | "outline";
+}
+
+export default function Button({
+  children,
+  variant = "primary",
+  className = "",
+  ...props
+}: ButtonProps) {
+  const baseClasses =
+    "rounded-lg px-5 py-3 font-medium transition-all duration-300 hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2";
+
+  const variants = {
+    primary:
+      "bg-blue-600 text-white shadow-md hover:bg-blue-700 hover:shadow-lg",
+
+    secondary:
+      "bg-slate-100 text-slate-900 shadow-sm hover:bg-slate-200 hover:shadow-md",
+
+    outline:
+      "border border-slate-300 bg-transparent text-slate-900 hover:bg-slate-100",
+  };
+
+  return (
+    <button
+      className={`${baseClasses} ${variants[variant]} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+</file>
+
+<file path="client/components/home/Hero.tsx">
+import Button from "@/components/ui/Button";
+import Container from "@/components/ui/Container";
+import Badge from "@/components/ui/Badge";
+import { Sparkles } from "lucide-react";
+
+export default function Hero() {
+  return (
+    <section className="py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          <Badge>
+           <Sparkles size={16} className="mr-2" />
+           AI-Powered Placement Preparation
+          </Badge>
+          <h1 className="mt-6 text-5xl font-extrabold tracking-tight md:text-6xl">
+            Ace Your Next
+            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+  {" "}Technical Interview
+</span>
+          </h1>
+
+          <p className="mt-6 text-lg leading-8 text-slate-600">
+            Practice AI-powered mock interviews, receive personalized
+            feedback, and track your improvement—all in one place.
+          </p>
+
+          <div className="mt-10 flex justify-center gap-4">
+            <Button>
+              Get Started
+            </Button>
+
+            <Button variant="outline">
+              Learn More
+            </Button>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+</file>
+
+<file path="client/components/home/Statistics.tsx">
+import Container from "@/components/ui/Container";
+import SectionHeading from "@/components/ui/SectionHeading";
+import Card from "@/components/ui/Card";
+import { stats } from "@/constants/statistics";
+
+
+export default function Statistics() {
+  return (
+    <section className="bg-slate-100 py-20 text-slate-900">
+      <Container>
+        <SectionHeading
+          title="Trusted by Future Engineers"
+          subtitle="Everything you need to prepare for placements with confidence."
+        />
+
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => (
+<Card
+  key={stat.label}
+  className="text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+>
+  <h3 className="text-5xl font-bold text-blue-600">
+    {stat.value}
+  </h3>
+
+  <p className="mt-2 text-slate-600">
+    {stat.label}
+  </p>
+</Card>
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+</file>
+
+<file path="client/components/ui/Card.tsx">
+import { ReactNode } from "react";
+
+interface CardProps {
+  children: ReactNode;
+  className?: string;
+}
+
+export default function Card({
+  children,
+  className = "",
+}: CardProps) {
+  return (
+    <div
+      className={`rounded-2xl border border-slate-200 bg-white text-slate-900 p-6 shadow-sm transition-all duration-300 hover:shadow-lg ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+</file>
+
+<file path="client/package.json">
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^7.5.16",
+    "lucide-react": "^1.23.0",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+</file>
+
+<file path="client/app/page.tsx">
+import Navbar from "@/components/layout/Navbar";
+import Hero from "@/components/home/Hero";
+import Features from "@/components/home/Features";
+import Footer from "@/components/layout/Footer";
+import Statistics from "@/components/home/Statistics";
+import Testimonials from "@/components/home/Testimonials";
+import Pricing from "@/components/home/Pricing";
+
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-black text-white">
+
+      <Navbar />
+
+      <Hero />
+
+      <Features />
+
+      <Statistics />
+
+      <Testimonials />
+
+      <Pricing />
+
+      <Footer />
+
+    </main>
+  );
+}
+</file>
+
+<file path="docs/ARCHITECTURE.md">
+# Frontend Architecture
+
+## Component Organization
+
+components/
+
+- home/
+  - Hero
+  - Statistics
+  - Features
+
+- layout/
+  - Navbar
+  - Footer
+
+- ui/
+  - Button
+  - Card
+  - Container
+  - SectionHeading
+  - Badge
+
+---
+
+## Design Principles
+
+- Reusable UI components
+- Component composition
+- Data-driven rendering
+- Separation of layout and presentation
+- Shared design system
+- Scalable folder organization
+
+---
+
+## Current Tech Stack
+
+Frontend
+- Next.js
+- TypeScript
+- Tailwind CSS
+
+Version Control
+- Git
+- GitHub
+
+## Constants Layer
+
+Purpose
+
+Separate static application data from presentation components.
+
+Current Files
+
+Current Files
+
+```text
+constants/
+├── statistics.ts
+├── testimonials.ts
+├── pricing.ts
+├── footerLinks.ts
+└── navLinks.ts
+```
+
+Benefits
+
+- Cleaner components
+- Easier maintenance
+- Simpler migration to backend APIs
+- Better separation of concerns
+
+---
+
+# Recent Architecture Updates
+
+## Pricing Architecture
+
+Pricing information has been moved into:
+
+```text
+constants/pricing.ts
+```
+
+The Pricing component renders plans dynamically using `.map()`, making it easy to add, remove, or modify plans without changing component logic.
+
+---
+
+## Navigation Architecture
+
+Navigation links are now stored in:
+
+```text
+constants/navLinks.ts
+```
+
+The Navbar renders navigation dynamically from the constants layer instead of hardcoded JSX.
+
+Benefits:
+
+- Centralized navigation
+- Easier maintenance
+- Scalable as more pages are added
+
+---
+
+## Footer Architecture
+
+Footer navigation is stored in:
+
+```text
+constants/footerLinks.ts
+```
+
+This keeps presentation separated from application data and follows the same architecture used throughout the landing page.
+
+---
+
+## Interactive Components
+
+Navbar has been converted into a **Client Component**.
+
+Reason:
+
+It uses React state (`useState`) for the responsive mobile navigation menu.
+
+---
+
+## Reusable Component Improvements
+
+### Button
+
+Enhanced with:
+
+- Hover animations
+- Active press animation
+- Focus ring
+- Improved transitions
+
+---
+
+### Card
+
+Enhanced with:
+
+- Explicit foreground color
+- Improved transitions
+- Better extensibility through `className`
+
+---
+
+## Landing Page Design Pattern
+
+The landing page consistently follows the architecture:
+
+```
+Data
+    ↓
+Constants
+    ↓
+Reusable Components
+    ↓
+Rendered UI
+```
+
+This pattern allows future replacement of static constants with backend API responses while keeping the UI components unchanged.
+
+## Authentication Flow
+
+Landing Page
+        │
+        ▼
+ Sign Up / Sign In (Clerk)
+        │
+        ▼
+ Authentication
+        │
+        ▼
+ Protected Dashboard
+        │
+        ├── Sidebar
+        ├── Topbar
+        └── Dashboard Content
+---
+
+## Dashboard Data Architecture
+
+Dashboard stats now follow the same Data → Constants → Components pattern used on the landing page, extended with a typed data-access layer:
+
+---
+
+## Interview Module Data Architecture
+
+Follows the same Data → Constants → lib (seam) → Components → UI pattern.
+
+`lib/interviews.ts` currently backs an **in-memory session store** (not just 
+static mock data) since Interviews require writes (create session, submit 
+answer, complete). This is a temporary bridge — the store resets on reload — 
+until the real Postgres/Prisma backend replaces it with zero component changes.
+
+AI integration points are isolated and marked `TODO(v1.0-AI)`:
+- Question generation (`createInterviewSession`)
+- Answer evaluation + scoring (`completeInterview`)
+
+---
+
+## Dashboard Route Structure
+
+All sidebar destinations now resolve to real pages under `app/dashboard/`:
+</file>
+
+<file path="docs/PROJECT_LOG.md">
+# Development Log
+
+## Day 1 (29 June 2026)
+
+### Objective
+
+Set up the Eleva project and establish a scalable frontend architecture.
+
+### Completed
+
+* Created Eleva project repository
+* Initialized Git and configured `main` branch
+* Created monorepo-style structure:
+
+  * `client/`
+  * `server/`
+  * `docs/`
+* Bootstrapped Next.js project with:
+
+  * TypeScript
+  * Tailwind CSS
+  * ESLint
+  * App Router
+* Learned the basic React component architecture
+* Replaced the default Next.js landing page
+* Created reusable components:
+
+  * Navbar
+  * Hero
+  * Features
+  * Footer
+* Organized components into:
+
+  * `components/layout`
+  * `components/home`
+* Added responsive feature cards
+* Added smooth navigation to the Features section
+* Established Git commit workflow
+
+---
+
+## Git History
+
+* Initialize Eleva with Next.js and project structure
+* Build landing page architecture and reusable components
+
+---
+
+## Concepts Learned
+
+* React Components
+* JSX
+* Component Composition
+* Tailwind Utility Classes
+* Responsive Design
+* Project Folder Architecture
+* Git Workflow
+
+---
+
+## Next Session
+
+* Create reusable UI components
+* Improve landing page design
+* Build modern SaaS hero section
+* Improve typography and spacing
+
+# PROJECT LOG
+
+## Sprint 2 — UI Design System & Landing Page Refactor
+
+### Date
+July 1, 2026
+
+### Objectives
+- Build a reusable UI component library.
+- Refactor the landing page to use reusable components.
+- Improve maintainability and scalability.
+- Push the latest progress to GitHub.
+
+### Completed
+
+#### UI Components
+- Created reusable `Container` component.
+- Created reusable `Button` component with:
+  - Variants
+  - Prop forwarding
+  - Native button attribute support
+- Created reusable `Card` component.
+- Created reusable `SectionHeading` component.
+- Added reusable `Badge` component.
+
+#### Landing Page
+- Refactored Hero section.
+- Refactored Features section using reusable cards.
+- Added Statistics section.
+- Replaced repeated Tailwind classes with reusable components.
+
+#### React Concepts Learned
+- Component composition
+- `children`
+- `React.ReactNode`
+- Interface extension
+- Rest props (`...props`)
+- Prop forwarding
+- Conditional rendering
+- Data-driven UI using arrays
+- Rendering lists using `.map()`
+- Object destructuring
+
+#### Git
+- Created meaningful milestone commit.
+- Connected local repository to GitHub.
+- Successfully pushed the project to GitHub.
+
+### Result
+
+Eleva now has the foundation of a reusable design system that will support future frontend development.
+
+## Sprint 3 — Landing Page Polish & Data Architecture
+
+### Completed
+
+- Added Testimonials section.
+- Integrated Lucide React icons.
+- Implemented reusable Badge component.
+- Enhanced Hero section with premium styling.
+- Improved Statistics section with reusable Card component.
+- Extended Card component to support custom className.
+- Introduced constants folder to separate UI from data.
+- Improved responsive layout.
+- Fixed project dependency structure.
+- Connected GitHub remote and established push workflow.
+
+### Engineering Concepts Learned
+
+- Component extensibility
+- Separation of Concerns
+- Design System evolution
+- External icon libraries
+- Project dependency management
+
+# Sprint 4 — Landing Page Completion
+
+## Features Completed
+
+- Implemented Pricing section.
+- Added reusable pricing data in `constants/pricing.ts`.
+- Redesigned Footer with multiple sections:
+  - Brand
+  - Quick Links
+  - Resources
+  - Social Links
+- Added reusable footer data in `constants/footerLinks.ts`.
+- Built a fully responsive Navbar.
+- Added mobile navigation with hamburger menu.
+- Implemented smooth scrolling for section navigation.
+- Added hover animations and micro-interactions across the landing page.
+- Improved reusable Button component with:
+  - hover animations
+  - active state
+  - focus ring
+  - smoother transitions
+- Improved reusable Card component with better transition behavior and explicit text colors.
+
+---
+
+## React Concepts Learned
+
+- Client Components (`"use client"`)
+- `useState`
+- Event Handling (`onClick`)
+- Conditional Rendering
+- Responsive UI using Tailwind breakpoints
+- State-driven UI updates
+
+---
+
+## UI/UX Improvements
+
+- Better CTA buttons
+- Interactive cards
+- Sticky navigation
+- Responsive mobile experience
+- Improved spacing and layout consistency
+- Smooth scrolling navigation
+
+---
+
+## Git
+
+Completed first major feature milestone:
+**Responsive Landing Page MVP**
+
+---
+
+# Sprint 3 — Authentication & Dashboard Foundation
+
+Date: July 2026
+
+## Completed
+
+### Authentication
+
+- Integrated Clerk Authentication.
+- Added ClerkProvider to Root Layout.
+- Created `.env.local` with Clerk Publishable and Secret Keys.
+- Added authentication middleware/proxy.
+- Created Sign In page.
+- Created Sign Up page.
+- Added protected Dashboard route.
+
+### Landing Page
+
+- Connected "Get Started" CTA to authentication flow.
+- Navbar button now redirects users to Sign Up.
+
+### Dashboard
+
+Created initial dashboard layout consisting of:
+
+- Sidebar
+- Topbar
+- Dashboard Content Area
+
+Current dashboard sections:
+
+- Mock Interviews
+- Resume Score
+- DSA Progress
+- Achievements
+
+### UI
+
+Created reusable dashboard components.
+
+Current folder structure:
+
+client/
+├── app/dashboard
+├── components/dashboard
+│ ├── Sidebar.tsx
+│ ├── Topbar.tsx
+│ ├── DashboardContent.tsx
+│ └── DashboardCard.tsx
+
+### Status
+
+Authentication is fully functional.
+
+Users can:
+
+- Sign Up
+- Verify email
+- Sign In
+- Access protected dashboard
+
+Dashboard currently displays placeholder statistics.
+
+Next sprint will focus on making the dashboard interactive.
+
+---
+
+# Sprint 5 — Dashboard Data Architecture
+
+Date: July 2026
+
+## Objective
+
+Replace static placeholder dashboard cards with a typed, data-driven rendering pipeline that's ready to swap mock data for a real backend later with zero component changes.
+
+## Completed
+
+- Created `types/dashboard.ts` — `DashboardStat`, `DashboardActivity`, `DashboardData` interfaces.
+- Created `constants/dashboardData.ts` — mock data implementing those types.
+- Created `lib/dashboard.ts` — `getDashboardStats()`, the single data-access seam for the dashboard.
+- Refactored `DashboardCard.tsx` to accept `label`/`icon name`/`trend` instead of hardcoded `title`/JSX icon.
+- Refactored `app/dashboard/page.tsx` into a Server Component that awaits `getDashboardStats()` and renders cards via `.map()`.
+
+## Engineering Concepts Learned
+
+- Data-access layer pattern (seam between UI and data source)
+- Server Components fetching data directly with `await`, no `useEffect`
+- Icon-name-to-component mapping for JSX-free data files
+- Designing types before implementation ("types first")
+
+## Status
+
+Dashboard now renders 4 stat cards from a typed mock data layer. Sidebar links to `/dashboard/interviews`, `/dashboard/resume`, `/dashboard/dsa`, `/dashboard/analytics`, `/dashboard/settings` still 404 — next sprint session will add stub routes and the User Profile page.
+
+---
+
+# Sprint 5 (continued) — Routing & User Profile
+
+## Completed
+
+- Created `ComingSoon` reusable placeholder component.
+- Added stub pages for all sidebar routes: `/dashboard/interviews`, `/dashboard/resume`, `/dashboard/dsa`, `/dashboard/analytics`, `/dashboard/settings` — no more 404s from the sidebar.
+- Added `/dashboard/profile` using Clerk's `<UserProfile />` for full account management.
+- Updated `Sidebar.tsx` to include the Profile link.
+
+## Engineering Concepts Learned
+
+- Parameterized placeholder components to avoid duplicated JSX across stub routes
+- When to use a library's built-in UI vs. building your own (security-sensitive surfaces)
+- Next.js file-based routing — folder name must exactly match the `href` path
+
+## Status
+
+Sprint 5 complete. Dashboard now has: dynamic data-driven stat cards, a fully working sidebar with no dead links, and a real Profile page. All remaining dashboard sections (Interviews, Resume, DSA, Analytics, Settings) are stubbed and ready for their own dedicated sprints per the roadmap.
+
+---
+
+# Sprint 6 — Mock Interview Module (Text-Based, MVP)
+
+Date: July 12, 2026
+
+## Strategy Shift
+
+Pivoted to MVP-first development. Priority is a deployed, placement-ready v1.0 
+over full feature completeness. Target deploy date: **July 30, 2026**. 
+DSA Tracker deferred to v1.1 (post-launch) — will ship as "Coming Soon" 
+badge in v1.0 nav.
+
+## Objective
+
+Build a complete, clickable Interview module end-to-end on mock data, 
+with AI integration points clearly isolated for later wiring — no voice/webcam, 
+text-only per revised MVP scope.
+
+## Completed
+
+- Extended `types/interview.ts` — `InterviewSession`, `InterviewQuestion`, 
+  `InterviewType`, `InterviewStatus`, `NewInterviewInput`.
+- Built mock question bank in `constants/interviewData.ts` (`generateMockQuestions`).
+- Extended `lib/interviews.ts` seam with in-memory session store: 
+  `getInterviewSessions`, `getInterviewSession`, `createInterviewSession`, 
+  `submitAnswer`, `completeInterview`.
+- Built `StartInterviewForm`, `InterviewHistoryCard`, `InterviewsPageClient`.
+- Built `InterviewSessionClient` — question-by-question answer flow.
+- Built `InterviewResults` — score + per-question feedback view.
+- Wired dynamic route `app/dashboard/interviews/[id]/page.tsx`.
+- Marked two seam points with `TODO(v1.0-AI)` for real OpenAI integration:
+  question generation and answer evaluation/scoring.
+
+## Engineering Concepts Learned
+
+- Dynamic routing (`[id]` segments) in App Router
+- Designing a mock seam that mirrors the shape of a future async AI call
+- Client-side in-memory store as a bridge before real backend/DB exists
+- Marking integration points explicitly (`TODO(v1.0-AI)`) for clean future handoff
+
+## Status
+
+Interview module is functionally complete on mock data: start → answer → 
+score → results → history. Next: Resume Analyzer frontend shell (same 
+pattern), per revised MVP roadmap.
+</file>
+
+<file path="docs/ROADMAP.md">
+# Eleva Roadmap
+
+## Vision
+
+Build a startup-quality AI-powered placement preparation platform that helps students practice technical interviews, receive AI-driven feedback, and track their progress.
+
+---
+
+# Phase 1 — Foundation ✅
+
+- [x] Project Initialization
+- [x] Git Repository Setup
+- [x] GitHub Integration
+- [x] Next.js Setup
+- [x] TypeScript
+- [x] Tailwind CSS
+- [x] App Router Configuration
+- [x] Initial Project Structure
+
+---
+
+# Phase 2 — Landing Page ✅
+
+## Completed
+
+- [x] Responsive Navbar
+- [x] Mobile Navigation Menu
+- [x] Hero Section
+- [x] Features Section
+- [x] Statistics Section
+- [x] Testimonials Section
+- [x] Pricing Section
+- [x] Footer Redesign
+- [x] Reusable UI Design System
+- [x] Hero Badge
+- [x] Gradient Hero Heading
+- [x] Lucide React Icons
+- [x] Responsive Layout Improvements
+- [x] Reusable Constants Architecture
+- [x] Smooth Scrolling
+- [x] Hover Animations
+- [x] Landing Page Polish
+
+
+---
+
+# Phase 3 — Authentication ( Current Sprint)
+
+- [ ] Clerk Authentication
+- [ ] Login
+- [ ] Signup
+- [ ] Protected Routes
+- [ ] User Profile
+- [x] Install Clerk
+- [x] Configure Environment Variables
+- [x] Add Clerk Provider
+- [x] Create Authentication Pages
+- [x] Protect Dashboard Routes
+- [x] Dashboard Shell
+
+---
+
+# Phase 4 — Dashboard
+
+- [ ] Dashboard Layout
+- [ ] Sidebar Navigation
+- [ ] Interview History
+- [ ] Progress Dashboard
+- [ ] User Settings
+- [x] User Profile
+- [x] Real Statistics
+- [ ] Interview History
+- [ ] Resume Analysis
+- [ ] DSA Tracker
+- [ ] Settings
+
+---
+
+# Phase 5 — AI Interview Engine
+
+- [ ] Resume Upload
+- [ ] Resume Parsing
+- [ ] AI Question Generation
+- [ ] AI Mock Interview
+- [ ] AI Feedback
+- [ ] Interview Reports
+
+---
+
+# Phase 6 — Voice & Analytics
+
+- [ ] Voice-based Interviews
+- [ ] Confidence Detection
+- [ ] Weak Topic Analysis
+- [ ] Personalized Recommendations
+
+---
+
+# Phase 7 — Backend
+
+- [ ] Express Server
+- [ ] PostgreSQL
+- [ ] Prisma ORM
+- [ ] Database Models
+- [ ] API Routes
+
+---
+
+# Phase 8 — Deployment
+
+- [ ] Vercel Deployment
+- [ ] Production Environment Variables
+- [ ] Custom Domain
+- [ ] Portfolio Integration
+
+---
+
+# Version 1.0 — Placement MVP (Revised Scope, target: July 30, 2026)
+
+## In Scope
+- [x] Auth (Clerk) + protected routes
+- [x] Dashboard (stats, profile, nav)
+- [x] Interview module — text-based only (question gen, answer, AI eval, history)
+- [ ] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions
+- [ ] Backend — Express + Prisma + PostgreSQL, real auth-linked data
+- [ ] Deployment — Vercel, env config, production build
+
+## Deferred to v1.1+ (Coming Soon badge in v1.0)
+- [ ] DSA Tracker
+- [ ] Voice / webcam interviews
+- [ ] Speech-to-text, confidence/emotion detection
+- [ ] Advanced AI analytics, personalized coaching
+- [ ] Notifications, email reminders
+</file>
+
+</files>

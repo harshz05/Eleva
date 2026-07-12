@@ -1,5 +1,5 @@
 import { mockInterviewSessions, generateMockQuestions } from "@/constants/interviewData";
-import { InterviewSession, NewInterviewInput } from "@/types/interview";
+import { InterviewSession, NewInterviewInput } from "@/types/interviews";
 
 // In-memory store simulating a DB until the real backend lands.
 // Seeded once from mock data; mutated as sessions are created/updated.

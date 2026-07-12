@@ -1,10 +1,13 @@
-import ComingSoon from "@/components/dashboard/ComingSoon";
+import InterviewsPageClient from "@/components/interviews/InterviewsPageClient";
 
 export default function InterviewsPage() {
   return (
-    <ComingSoon
-      title="Mock Interviews"
-      description="AI-powered mock interview sessions are coming soon. You'll be able to practice with AI-generated questions and get instant feedback."
-    />
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">Mock Interviews</h1>
+        <p className="mt-2 text-slate-500">Start a practice session or review your history.</p>
+      </div>
+      <InterviewsPageClient />
+    </>
   );
 }

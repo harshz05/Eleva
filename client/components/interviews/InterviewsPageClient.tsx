@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getInterviewSessions, createInterviewSession } from "@/lib/interviews";
-import { InterviewSession, NewInterviewInput } from "@/types/interview";
+import { InterviewSession, NewInterviewInput } from "@/types/interviews";
 import StartInterviewForm from "./StartInterviewForm";
 import InterviewHistoryCard from "./InterviewHistoryCard";
 

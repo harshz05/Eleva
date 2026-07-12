@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { InterviewSession } from "@/types/interview";
+import { InterviewSession } from "@/types/interviews";
 
 const statusStyles: Record<InterviewSession["status"], string> = {
   completed: "bg-green-100 text-green-700",

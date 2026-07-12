@@ -1,4 +1,4 @@
-import { InterviewSession, InterviewType } from "@/types/interview";
+import { InterviewSession, InterviewType } from "@/types/interviews";
 
 export const mockInterviewSessions: InterviewSession[] = [
   {

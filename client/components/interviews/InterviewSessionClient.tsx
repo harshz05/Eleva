@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getInterviewSession, submitAnswer, completeInterview } from "@/lib/interviews";
-import { InterviewSession } from "@/types/interview";
+import { InterviewSession } from "@/types/interviews";
 import InterviewResults from "./InterviewResults";
 
 export default function InterviewSessionClient({ sessionId }: { sessionId: string }) {

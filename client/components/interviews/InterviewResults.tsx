@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { InterviewSession } from "@/types/interview";
+import { InterviewSession } from "@/types/interviews";
 
 export default function InterviewResults({ session }: { session: InterviewSession }) {
   return (
