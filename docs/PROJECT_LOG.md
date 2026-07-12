@@ -288,3 +288,23 @@ Replace static placeholder dashboard cards with a typed, data-driven rendering p
 
 Dashboard now renders 4 stat cards from a typed mock data layer. Sidebar links to `/dashboard/interviews`, `/dashboard/resume`, `/dashboard/dsa`, `/dashboard/analytics`, `/dashboard/settings` still 404 — next sprint session will add stub routes and the User Profile page.
 
+---
+
+# Sprint 5 (continued) — Routing & User Profile
+
+## Completed
+
+- Created `ComingSoon` reusable placeholder component.
+- Added stub pages for all sidebar routes: `/dashboard/interviews`, `/dashboard/resume`, `/dashboard/dsa`, `/dashboard/analytics`, `/dashboard/settings` — no more 404s from the sidebar.
+- Added `/dashboard/profile` using Clerk's `<UserProfile />` for full account management.
+- Updated `Sidebar.tsx` to include the Profile link.
+
+## Engineering Concepts Learned
+
+- Parameterized placeholder components to avoid duplicated JSX across stub routes
+- When to use a library's built-in UI vs. building your own (security-sensitive surfaces)
+- Next.js file-based routing — folder name must exactly match the `href` path
+
+## Status
+
+Sprint 5 complete. Dashboard now has: dynamic data-driven stat cards, a fully working sidebar with no dead links, and a real Profile page. All remaining dashboard sections (Interviews, Resume, DSA, Analytics, Settings) are stubbed and ready for their own dedicated sprints per the roadmap.

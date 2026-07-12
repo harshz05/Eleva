@@ -186,4 +186,9 @@ Landing Page
 ## Dashboard Data Architecture
 
 Dashboard stats now follow the same Data → Constants → Components pattern used on the landing page, extended with a typed data-access layer:
-        
+
+---
+
+## Dashboard Route Structure
+
+All sidebar destinations now resolve to real pages under `app/dashboard/`:       

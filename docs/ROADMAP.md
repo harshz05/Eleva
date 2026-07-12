@@ -67,7 +67,7 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [ ] Interview History
 - [ ] Progress Dashboard
 - [ ] User Settings
-- [ ] User Profile
+- [x] User Profile
 - [x] Real Statistics
 - [ ] Interview History
 - [ ] Resume Analysis
