@@ -207,3 +207,42 @@ AI integration points are isolated and marked `TODO(v1.0-AI)`:
 ## Dashboard Route Structure
 
 All sidebar destinations now resolve to real pages under `app/dashboard/`:       
+
+---
+
+## Resume Module Data Architecture
+
+Same seam pattern as Interviews. `lib/resume.ts` holds a single 
+in-memory `currentResume` (not an array) — re-uploading replaces it 
+rather than versioning, matching how users actually iterate on one 
+resume. `TODO(v1.0-backend)` marks the file storage integration point; 
+`TODO(v1.0-AI)` marks the real parsing/feedback integration point.
+
+## Backend Architecture (Sprint 8)
+
+`server/` is a separate Express + TypeScript service (not Next.js API 
+routes), matching the original monorepo-style `client/` + `server/` 
+split from Day 1. Structure:
+
+```text
+server/
+├── prisma/schema.prisma
+├── src/
+│   ├── index.ts          — app entry, CORS, route mounting
+│   ├── lib/prisma.ts      — singleton Prisma client
+│   ├── middleware/
+│   │   ├── auth.ts        — Clerk token verification, find-or-create User
+│   │   └── errorHandler.ts
+│   └── routes/
+│       └── interviews.ts  — mirrors lib/interviews.ts seam shape
+```
+
+Auth flow: Next.js frontend sends the Clerk session token as a Bearer 
+header; Express verifies it via `@clerk/backend`, and maps the Clerk 
+user ID to a local `User` row (upsert on every request) so all other 
+tables can foreign-key against a stable internal ID rather than Clerk's 
+ID directly.
+
+Hosted on Supabase Postgres — pooled connection (`DATABASE_URL`) for 
+app runtime queries, direct connection (`DIRECT_URL`) for Prisma 
+migrations, per Supabase's recommended Prisma setup.

@@ -121,7 +121,7 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [x] Auth (Clerk) + protected routes
 - [x] Dashboard (stats, profile, nav)
 - [x] Interview module — text-based only (question gen, answer, AI eval, history)
-- [ ] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions
+- [x] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions
 - [ ] Backend — Express + Prisma + PostgreSQL, real auth-linked data
 - [ ] Deployment — Vercel, env config, production build
 

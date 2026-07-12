@@ -355,3 +355,111 @@ text-only per revised MVP scope.
 Interview module is functionally complete on mock data: start → answer → 
 score → results → history. Next: Resume Analyzer frontend shell (same 
 pattern), per revised MVP roadmap.
+
+---
+
+# Sprint 7 — Resume Analyzer (Frontend Shell)
+
+Date: July 2026
+
+## Objective
+
+Build a complete Resume Analyzer UI on mock data, following the same 
+Data → Constants → lib (seam) → Components → UI pattern as Interviews, 
+with AI/backend integration points isolated for later wiring.
+
+## Completed
+
+- Created `types/resume.ts` — `Resume`, `ResumeAnalysis`, `ResumeSuggestion`.
+- Created `constants/resumeData.ts` — mock AI analysis output (summary, 
+  ATS score, categorized suggestions).
+- Created `lib/resume.ts` — in-memory seam: `getCurrentResume`, `uploadResume` 
+  (single current resume, re-upload replaces it — no versioning for MVP).
+- Built `ResumeUpload` — drag-and-drop + file picker, PDF-only validation, 
+  simulated processing delay.
+- Built `ResumeAnalysisView` — ATS score, summary, categorized suggestion cards.
+- Built `ResumePageClient` — ties upload + analysis view together.
+- Wired `app/dashboard/resume/page.tsx`.
+- Marked two integration points: `TODO(v1.0-backend)` (real file storage) 
+  and `TODO(v1.0-AI)` (real PDF parsing + AI feedback).
+
+## Verification Pass
+
+Audited existing stub routes before starting new work — confirmed 
+`app/dashboard/dsa/page.tsx`, `app/dashboard/analytics/page.tsx`, and 
+`app/dashboard/settings/page.tsx` were already correctly wired to the 
+`ComingSoon` component from earlier stub work (Sprint 5). No new work 
+needed; sidebar links match route folders exactly. Confirms DSA Tracker 
+is already in its intended v1.0 "Coming Soon" state per the MVP scope pivot.
+
+## Bugs Found & Fixed (post-integration testing)
+
+1. **Stale TS server** — VS Code's TypeScript language service cached the 
+   module graph from before `types/` files existed, throwing false 
+   "cannot find module" errors even though files were correctly created. 
+   Fixed via "TypeScript: Restart TS Server."
+2. **Interview page never wired** — `app/dashboard/interviews/page.tsx` 
+   still pointed at the old `ComingSoon` stub instead of the new 
+   `InterviewsPageClient`. Overwritten with the correct import.
+3. **Next.js 16 async `params` bug** — `app/dashboard/interviews/[id]/page.tsx` 
+   destructured `params` synchronously, but Next.js 16 makes dynamic route 
+   `params` a `Promise`. This meant `sessionId` was an unresolved Promise 
+   object, not a string, so `getInterviewSession()` never found a match and 
+   silently redirected back to the interview list before any question 
+   appeared. Fixed by making the page `async` and `await`-ing `params`.
+
+## Status
+
+Resume Analyzer is functionally complete on mock data. Interview module 
+confirmed fully working end-to-end after bug fixes above (start → answer 
+→ score → results → history). Both modules ready for backend wiring.
+
+---
+
+# Sprint 8 — Backend Foundation (In Progress)
+
+Date: July 2026
+
+## Strategy Context
+
+Per the MVP scope pivot (see Roadmap v1.0 section), this sprint builds 
+the real backend that Interviews and Resume's mock `lib/` seams will 
+swap into. Chose **Supabase** for hosted Postgres and a **separate 
+Express server** (not Next.js API routes) to match the original 
+architecture plan and resume/portfolio positioning (Express.js + 
+PostgreSQL + Prisma ORM as distinct, demonstrable backend skills).
+
+## Completed So Far
+
+- Drafted `server/` scaffold: Express + TypeScript + Prisma, `tsx` for 
+  dev hot-reload.
+- Designed Prisma schema: `User`, `InterviewSession`, `InterviewQuestion`, 
+  `Resume`, `ResumeSuggestion`, and `DsaProblem` (schema defined now for 
+  v1.1, even though the feature itself stays "Coming Soon" in v1.0 — 
+  costs nothing to model today, avoids a future migration).
+- Built `middleware/auth.ts` — verifies Clerk session tokens sent from 
+  the Next.js frontend, find-or-creates a local `User` row keyed by 
+  Clerk's user ID.
+- Built `middleware/errorHandler.ts` — centralized error responses.
+- Built full `routes/interviews.ts` — list, get one, create (mock 
+  question bank server-side), submit answer, complete + score. Mirrors 
+  the exact function shape of the frontend's `lib/interviews.ts` seam.
+- Built `src/index.ts` — Express app entry, CORS scoped to the Next.js 
+  client origin.
+
+## Open Items / Blocked On
+
+- Supabase project not yet created — need pooled + direct connection 
+  strings before running the first Prisma migration.
+- Need to confirm `CLERK_SECRET_KEY` is available server-side (should 
+  match the client's Clerk key).
+- Flagged uncertainty: Clerk JWT payload may not include `email` by 
+  default — may need `@clerk/backend`'s `getUser()` call instead of 
+  relying on token claims. To be verified once auth is tested live.
+- Resume routes (`routes/resume.ts`) not yet built — planned as the 
+  next piece once Interviews routes are verified working against a 
+  real DB.
+
+## Status
+
+Backend code is written and ready to run, pending Supabase credentials.
