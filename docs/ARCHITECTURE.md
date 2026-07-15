@@ -262,3 +262,30 @@ User row -> route handler runs with `req.userId` available.
 Stack: Prisma 6 (pinned — v7 requires driver adapters, deferred until 
 after MVP ships) + Supabase Postgres (Mumbai region, pooled connection 
 for runtime, direct connection for migrations).
+## Resume Module Backend (Sprint 9)
+
+Same pattern as the Interview module: `client/lib/resume.ts` is the seam, 
+swapped from an in-memory store to real `authFetch` calls with zero 
+changes to `ResumeAnalysisView.tsx` (the presentation layer never knew 
+the data source changed).
+
+One divergence worth noting: the backend response shape is flat 
+(`atsScore`, `summary`, `suggestions` at top level, matching the Prisma 
+model) while the client `Resume` type nests these under `.analysis` 
+(matching how the UI was already built against the mock). Rather than 
+change the UI or the schema to match each other, `lib/resume.ts` maps 
+between them — this is deliberately what the seam is for.
+
+`Resume` is modeled as a true 1:1 with `User` (`userId @unique`) rather 
+than 1:many, matching the existing "re-upload replaces" UX rather than 
+resume versioning. Upload does `deleteMany` + `create` rather than 
+`update`, since Prisma's `upsert` doesn't cleanly support replacing a 
+nested relation (`suggestions`) in one call — old suggestions cascade-delete 
+via the schema's `onDelete: Cascade`.
+
+File storage remains out of scope: `server/src/routes/resume.ts` uses 
+`multer` with in-memory storage purely to accept the multipart upload; 
+`req.file.buffer` is never persisted. `fileUrl` stays `null` until 
+`TODO(v1.0-backend)` real storage (S3/Cloudinary) is wired. ATS scoring 
+and suggestions remain `TODO(v1.0-AI)` mocked server-side, same 
+isolation pattern as the Interview module's question bank / scoring.

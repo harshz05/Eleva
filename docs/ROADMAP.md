@@ -41,16 +41,15 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [x] Hover Animations
 - [x] Landing Page Polish
 
-
 ---
 
-# Phase 3 — Authentication ( Current Sprint)
+# Phase 3 — Authentication ✅
 
-- [ ] Clerk Authentication
-- [ ] Login
-- [ ] Signup
-- [ ] Protected Routes
-- [ ] User Profile
+- [x] Clerk Authentication
+- [x] Login
+- [x] Signup
+- [x] Protected Routes
+- [x] User Profile
 - [x] Install Clerk
 - [x] Configure Environment Variables
 - [x] Add Clerk Provider
@@ -60,34 +59,32 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 
 ---
 
-# Phase 4 — Dashboard
+# Phase 4 — Dashboard ✅
 
-- [ ] Dashboard Layout
-- [ ] Sidebar Navigation
-- [ ] Interview History
-- [ ] Progress Dashboard
-- [ ] User Settings
+- [x] Dashboard Layout
+- [x] Sidebar Navigation
+- [x] Interview History
+- [x] Progress Dashboard (basic stats)
+- [x] User Settings (stubbed, Coming Soon)
 - [x] User Profile
 - [x] Real Statistics
-- [ ] Interview History
-- [ ] Resume Analysis
-- [ ] DSA Tracker
-- [ ] Settings
+- [x] Resume Analysis
+- [ ] DSA Tracker (deferred v1.1)
 
 ---
 
-# Phase 5 — AI Interview Engine
+# Phase 5 — AI Interview Engine (mocked, real AI next sprint)
 
-- [ ] Resume Upload
-- [ ] Resume Parsing
-- [ ] AI Question Generation
-- [ ] AI Mock Interview
-- [ ] AI Feedback
-- [ ] Interview Reports
+- [x] Resume Upload
+- [ ] Resume Parsing (real, TODO(v1.0-AI))
+- [ ] AI Question Generation (real, TODO(v1.0-AI))
+- [x] AI Mock Interview (text-based, mocked evaluation)
+- [ ] AI Feedback (real, TODO(v1.0-AI))
+- [x] Interview Reports (mocked scoring)
 
 ---
 
-# Phase 6 — Voice & Analytics
+# Phase 6 — Voice & Analytics (deferred indefinitely, not in v1.0)
 
 - [ ] Voice-based Interviews
 - [ ] Confidence Detection
@@ -96,13 +93,13 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 
 ---
 
-# Phase 7 — Backend
+# Phase 7 — Backend ✅
 
-- [ ] Express Server
-- [ ] PostgreSQL
-- [ ] Prisma ORM
-- [ ] Database Models
-- [ ] API Routes
+- [x] Express Server
+- [x] PostgreSQL (Supabase)
+- [x] Prisma ORM
+- [x] Database Models (Interview + Resume)
+- [x] API Routes (Interview + Resume)
 
 ---
 
@@ -120,11 +117,11 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 ## In Scope
 - [x] Auth (Clerk) + protected routes
 - [x] Dashboard (stats, profile, nav)
-- [x] Interview module — text-based only (question gen, answer, AI eval, history)
-- [x] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions
-- [ ] Backend — Express + Prisma + PostgreSQL, real auth-linked data
+- [x] Interview module — text-based only (question gen, answer, AI eval, history) — backend live, AI mocked
+- [x] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions — backend live, AI mocked
+- [x] Backend — Express + Prisma + PostgreSQL, real auth-linked data (both modules)
+- [ ] Real AI integration (Interview + Resume) — next sprint
 - [ ] Deployment — Vercel, env config, production build
-- [x] Backend — Express + Prisma + PostgreSQL (Interview module live; Resume module next)
 
 ## Deferred to v1.1+ (Coming Soon badge in v1.0)
 - [ ] DSA Tracker
