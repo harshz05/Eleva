@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import interviewsRouter from "./routes/interviews";
+import resumeRouter from "./routes/resume";
 import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(express.json());
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api/interviews", interviewsRouter);
+app.use("/api/resume", resumeRouter);
 
 app.use(errorHandler);
 

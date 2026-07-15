@@ -15,6 +15,7 @@ model User {
   createdAt DateTime @default(now())
 
   interviewSessions InterviewSession[]
+  resume            Resume?
 }
 
 enum InterviewType {
@@ -57,4 +58,41 @@ model InterviewQuestion {
   order     Int
 
   @@index([sessionId])
+}
+
+enum ResumeStatus {
+  processing
+  analyzed
+  failed
+}
+
+enum SuggestionCategory {
+  formatting
+  content
+  keywords
+  structure
+}
+
+model Resume {
+  id        String       @id @default(cuid())
+  userId    String       @unique
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName  String
+  fileUrl   String? // TODO(v1.0-backend): real storage URL, null until wired
+  status    ResumeStatus @default(processing)
+  atsScore  Int?
+  summary   String?
+  createdAt DateTime     @default(now())
+
+  suggestions ResumeSuggestion[]
+}
+
+model ResumeSuggestion {
+  id       String             @id @default(cuid())
+  resumeId String
+  resume   Resume             @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  category SuggestionCategory
+  text     String
+
+  @@index([resumeId])
 }

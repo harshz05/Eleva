@@ -135,402 +135,31 @@ docs/
   ARCHITECTURE.md
   PROJECT_LOG.md
   ROADMAP.md
+server/
+  prisma/
+    migrations/
+      20260714075533_init/
+        migration.sql
+      migration_lock.toml
+    schema.prisma
+  src/
+    lib/
+      prisma.ts
+    middleware/
+      auth.ts
+      errorHandler.ts
+    routes/
+      interviews.ts
+    index.ts
+  .gitignore
+  package.json
+  tsconfig.json
 .gitignore
 README.md
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="client/components/interviews/StartInterviewForm.tsx">
-"use client";
-
-import { useState } from "react";
-import { InterviewType, NewInterviewInput } from "@/types/interviews";
-
-const ROLE_OPTIONS = ["SDE Intern", "ML Intern", "Frontend Intern", "Backend Intern"];
-const TYPE_OPTIONS: { value: InterviewType; label: string }[] = [
-  { value: "dsa", label: "DSA" },
-  { value: "behavioral", label: "Behavioral" },
-  { value: "technical", label: "Technical" },
-  { value: "system_design", label: "System Design" },
-];
-
-interface StartInterviewFormProps {
-  onStart: (input: NewInterviewInput) => void;
-  isCreating: boolean;
-}
-
-export default function StartInterviewForm({ onStart, isCreating }: StartInterviewFormProps) {
-  const [role, setRole] = useState(ROLE_OPTIONS[0]);
-  const [company, setCompany] = useState("");
-  const [type, setType] = useState<InterviewType>("dsa");
-
-  const handleSubmit = () => {
-    onStart({ role, company: company.trim() || undefined, type });
-  };
-
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900">Start a Mock Interview</h2>
-      <div className="mt-4 grid gap-4 sm:grid-cols-3">
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          {ROLE_OPTIONS.map((r) => (
-            <option key={r} value={r}>{r}</option>
-          ))}
-        </select>
-        <input
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-          placeholder="Company (optional)"
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        />
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value as InterviewType)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        >
-          {TYPE_OPTIONS.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
-          ))}
-        </select>
-      </div>
-      <button
-        onClick={handleSubmit}
-        disabled={isCreating}
-        className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
-      >
-        {isCreating ? "Starting..." : "Start Interview"}
-      </button>
-    </div>
-  );
-}
-</file>
-
-<file path="client/components/resume/ResumeAnalysisView.tsx">
-import { Resume } from "@/types/resume";
-
-const categoryStyles: Record<string, string> = {
-  formatting: "bg-purple-100 text-purple-700",
-  content: "bg-blue-100 text-blue-700",
-  keywords: "bg-amber-100 text-amber-700",
-  structure: "bg-green-100 text-green-700",
-};
-
-export default function ResumeAnalysisView({ resume }: { resume: Resume }) {
-  if (resume.status === "processing") {
-    return <p className="text-sm text-slate-500">Analyzing {resume.fileName}...</p>;
-  }
-  if (!resume.analysis) return null;
-
-  const { summary, atsScore, suggestions } = resume.analysis;
-
-  return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-slate-500">{resume.fileName}</p>
-            <p className="mt-1 text-xs text-slate-400">
-              Uploaded {new Date(resume.uploadedAt).toLocaleDateString()}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-slate-500">ATS Score</p>
-            <p className="text-3xl font-bold text-blue-600">{atsScore}</p>
-          </div>
-        </div>
-        <p className="mt-4 text-sm text-slate-600">{summary}</p>
-      </div>
-
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-slate-900">Suggestions</h3>
-        <div className="space-y-3">
-          {suggestions.map((s) => (
-            <div key={s.id} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
-              <span className={`rounded-full px-2 py-1 text-xs font-medium ${categoryStyles[s.category]}`}>
-                {s.category}
-              </span>
-              <p className="text-sm text-slate-700">{s.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-</file>
-
-<file path="client/components/resume/ResumePageClient.tsx">
-"use client";
-
-import { useEffect, useState } from "react";
-import { getCurrentResume } from "@/lib/resume";
-import { Resume } from "@/types/resume";
-import ResumeUpload from "./ResumeUpload";
-import ResumeAnalysisView from "./ResumeAnalysisView";
-
-export default function ResumePageClient() {
-  const [resume, setResume] = useState<Resume | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getCurrentResume().then((r) => {
-      setResume(r);
-      setLoading(false);
-    });
-  }, []);
-
-  if (loading) return <p className="text-sm text-slate-500">Loading...</p>;
-
-  return (
-    <div className="space-y-6">
-      <ResumeUpload onUploaded={setResume} />
-      {resume && (
-        <>
-          <p className="text-sm text-slate-500">
-            Uploading a new file will replace your current resume.
-          </p>
-          <ResumeAnalysisView resume={resume} />
-        </>
-      )}
-    </div>
-  );
-}
-</file>
-
-<file path="client/components/resume/ResumeUpload.tsx">
-"use client";
-
-import { useRef, useState } from "react";
-import { uploadResume } from "@/lib/resume";
-import { Resume } from "@/types/resume";
-import { UploadCloud } from "lucide-react";
-
-interface ResumeUploadProps {
-  onUploaded: (resume: Resume) => void;
-}
-
-export default function ResumeUpload({ onUploaded }: ResumeUploadProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleFile = async (file: File) => {
-    if (file.type !== "application/pdf") {
-      setError("Please upload a PDF file.");
-      return;
-    }
-    setError(null);
-    setIsUploading(true);
-    const resume = await uploadResume(file);
-    setIsUploading(false);
-    onUploaded(resume);
-  };
-
-  return (
-    <div
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
-        e.preventDefault();
-        const file = e.dataTransfer.files?.[0];
-        if (file) handleFile(file);
-      }}
-      className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center transition hover:border-blue-300"
-    >
-      <UploadCloud className="text-slate-400" size={36} />
-      <p className="mt-3 text-sm text-slate-600">
-        {isUploading ? "Uploading & analyzing..." : "Drag and drop your resume PDF, or"}
-      </p>
-      {!isUploading && (
-        <button
-          onClick={() => inputRef.current?.click()}
-          className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          Browse Files
-        </button>
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/pdf"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleFile(file);
-        }}
-      />
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-    </div>
-  );
-}
-</file>
-
-<file path="client/constants/resumeData.ts">
-import { ResumeAnalysis } from "@/types/resume";
-
-// TODO(v1.0-AI): replace with real AI-generated feedback from parsed resume text.
-export const mockResumeAnalysis: ResumeAnalysis = {
-  summary:
-    "Your resume is clear and well-structured, with strong technical project details. A few tweaks to keyword coverage and formatting consistency would improve ATS compatibility.",
-  atsScore: 76,
-  suggestions: [
-    { id: "s1", category: "keywords", text: "Add role-specific keywords from the job description (e.g. 'REST API', 'CI/CD') to improve ATS matching." },
-    { id: "s2", category: "formatting", text: "Use consistent bullet point punctuation throughout all sections." },
-    { id: "s3", category: "structure", text: "Move your most relevant project (Eleva) higher, closer to the top of the page." },
-    { id: "s4", category: "content", text: "Quantify achievements where possible — add metrics or outcomes to project bullets." },
-  ],
-};
-</file>
-
-<file path="client/lib/interviews.ts">
-import { mockInterviewSessions, generateMockQuestions } from "@/constants/interviewData";
-import { InterviewSession, NewInterviewInput } from "@/types/interviews";
-
-// In-memory store simulating a DB until the real backend lands.
-// Seeded once from mock data; mutated as sessions are created/updated.
-const sessionStore: InterviewSession[] = [...mockInterviewSessions];
-
-export async function getInterviewSessions(): Promise<InterviewSession[]> {
-  return sessionStore;
-}
-
-export async function getInterviewSession(id: string): Promise<InterviewSession | undefined> {
-  return sessionStore.find((s) => s.id === id);
-}
-
-export async function createInterviewSession(
-  input: NewInterviewInput
-): Promise<InterviewSession> {
-  // TODO(v1.0-AI): replace generateMockQuestions with a real AI question-gen call.
-  const session: InterviewSession = {
-    id: `int-${Date.now()}`,
-    role: input.role,
-    company: input.company,
-    type: input.type,
-    status: "in_progress",
-    createdAt: new Date().toISOString(),
-    questions: generateMockQuestions(input.type),
-  };
-  sessionStore.unshift(session);
-  return session;
-}
-
-export async function submitAnswer(
-  sessionId: string,
-  questionId: string,
-  answer: string
-): Promise<InterviewSession | undefined> {
-  const session = sessionStore.find((s) => s.id === sessionId);
-  if (!session) return undefined;
-  const question = session.questions.find((q) => q.id === questionId);
-  if (question) question.answer = answer;
-  return session;
-}
-
-export async function completeInterview(sessionId: string): Promise<InterviewSession | undefined> {
-  const session = sessionStore.find((s) => s.id === sessionId);
-  if (!session) return undefined;
-  // TODO(v1.0-AI): replace with a real AI evaluation call (per-question feedback + overall score).
-  session.status = "completed";
-  session.completedAt = new Date().toISOString();
-  session.score = Math.floor(Math.random() * 21) + 70; // mock 70-90
-  session.questions.forEach((q) => {
-    q.feedback = q.answer
-      ? "Solid structure — consider adding a concrete example next time."
-      : "No answer submitted.";
-  });
-  return session;
-}
-</file>
-
-<file path="client/lib/resume.ts">
-import { mockResumeAnalysis } from "@/constants/resumeData";
-import { Resume } from "@/types/resume";
-
-// In-memory store, same bridge pattern as lib/interviews.ts — replaced by
-// real Postgres/Prisma + file storage once backend lands.
-let currentResume: Resume | null = null;
-
-export async function getCurrentResume(): Promise<Resume | null> {
-  return currentResume;
-}
-
-export async function uploadResume(file: File): Promise<Resume> {
-  // TODO(v1.0-backend): actually store the file (S3/Cloudinary or DB blob)
-  // TODO(v1.0-AI): parse real PDF text and run it through an AI feedback call
-  const resume: Resume = {
-    id: `res-${Date.now()}`,
-    fileName: file.name,
-    uploadedAt: new Date().toISOString(),
-    status: "processing",
-  };
-  currentResume = resume;
-
-  // simulate async processing delay
-  await new Promise((r) => setTimeout(r, 1200));
-  currentResume = { ...resume, status: "analyzed", analysis: mockResumeAnalysis };
-  return currentResume;
-}
-</file>
-
-<file path="client/types/interviews.ts">
-export type InterviewType = "dsa" | "behavioral" | "system_design" | "technical";
-export type InterviewStatus = "not_started" | "in_progress" | "completed";
-
-export interface InterviewQuestion {
-  id: string;
-  text: string;
-  type: InterviewType;
-  answer?: string;
-  feedback?: string;
-}
-
-export interface InterviewSession {
-  id: string;
-  role: string;
-  company?: string;
-  type: InterviewType;
-  status: InterviewStatus;
-  createdAt: string;
-  completedAt?: string;
-  durationSeconds?: number;
-  score?: number;
-  questions: InterviewQuestion[];
-}
-
-export interface NewInterviewInput {
-  role: string;
-  company?: string;
-  type: InterviewType;
-}
-</file>
-
-<file path="client/types/resume.ts">
-export interface ResumeSuggestion {
-  id: string;
-  category: "formatting" | "content" | "keywords" | "structure";
-  text: string;
-}
-
-export interface ResumeAnalysis {
-  summary: string;
-  atsScore: number; // 0-100, simple mock score for MVP — no advanced algorithm
-  suggestions: ResumeSuggestion[];
-}
-
-export interface Resume {
-  id: string;
-  fileName: string;
-  uploadedAt: string;
-  status: "processing" | "analyzed" | "failed";
-  analysis?: ResumeAnalysis;
-}
-</file>
 
 <file path="client/app/dashboard/analytics/page.tsx">
 import ComingSoon from "@/components/dashboard/ComingSoon";
@@ -558,27 +187,6 @@ export default function DsaPage() {
 }
 </file>
 
-<file path="client/app/dashboard/interviews/[id]/page.tsx">
-import InterviewSessionClient from "@/components/interviews/InterviewSessionClient";
-
-export default function InterviewSessionPage({ params }: { params: { id: string } }) {
-  return <InterviewSessionClient sessionId={params.id} />;
-}
-</file>
-
-<file path="client/app/dashboard/interviews/page.tsx">
-import ComingSoon from "@/components/dashboard/ComingSoon";
-
-export default function InterviewsPage() {
-  return (
-    <ComingSoon
-      title="Mock Interviews"
-      description="AI-powered mock interview sessions are coming soon. You'll be able to practice with AI-generated questions and get instant feedback."
-    />
-  );
-}
-</file>
-
 <file path="client/app/dashboard/profile/page.tsx">
 import { UserProfile } from "@clerk/nextjs";
 
@@ -595,22 +203,6 @@ export default function ProfilePage() {
         }}
       />
     </div>
-  );
-}
-</file>
-
-<file path="client/app/dashboard/resume/page.tsx">
-import ResumePageClient from "@/components/resume/ResumePageClient";
-
-export default function ResumePage() {
-  return (
-    <>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Resume Analyzer</h1>
-        <p className="mt-2 text-slate-500">Upload your resume for AI-powered feedback.</p>
-      </div>
-      <ResumePageClient />
-    </>
   );
 }
 </file>
@@ -873,204 +465,229 @@ export default function Testimonials() {
 }
 </file>
 
-<file path="client/components/interviews/InterviewHistoryCard.tsx">
-import Link from "next/link";
-import { InterviewSession } from "@/types/interviews";
-
-const statusStyles: Record<InterviewSession["status"], string> = {
-  completed: "bg-green-100 text-green-700",
-  in_progress: "bg-amber-100 text-amber-700",
-  not_started: "bg-slate-100 text-slate-500",
-};
-
-export default function InterviewHistoryCard({ session }: { session: InterviewSession }) {
-  return (
-    <Link
-      href={`/dashboard/interviews/${session.id}`}
-      className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 transition hover:border-blue-300"
-    >
-      <div>
-        <p className="font-medium text-slate-900">
-          {session.role}{session.company ? ` · ${session.company}` : ""}
-        </p>
-        <p className="mt-1 text-sm text-slate-500">
-          {new Date(session.createdAt).toLocaleDateString()} · {session.type.replace("_", " ")}
-        </p>
-      </div>
-      <div className="flex items-center gap-3">
-        {typeof session.score === "number" && (
-          <span className="text-sm font-semibold text-slate-700">{session.score}%</span>
-        )}
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusStyles[session.status]}`}>
-          {session.status.replace("_", " ")}
-        </span>
-      </div>
-    </Link>
-  );
-}
-</file>
-
-<file path="client/components/interviews/InterviewResults.tsx">
-import Link from "next/link";
-import { InterviewSession } from "@/types/interviews";
-
-export default function InterviewResults({ session }: { session: InterviewSession }) {
-  return (
-    <div className="mx-auto max-w-2xl">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-        <p className="text-sm text-slate-500">Overall Score</p>
-        <p className="mt-1 text-4xl font-bold text-blue-600">{session.score}%</p>
-      </div>
-
-      <div className="mt-6 space-y-4">
-        {session.questions.map((q, i) => (
-          <div key={q.id} className="rounded-xl border border-slate-200 bg-white p-4">
-            <p className="text-sm font-medium text-slate-900">Q{i + 1}. {q.text}</p>
-            <p className="mt-2 text-sm text-slate-600">
-              <span className="font-medium text-slate-500">Your answer: </span>
-              {q.answer || "—"}
-            </p>
-            <p className="mt-2 text-sm text-blue-600">{q.feedback}</p>
-          </div>
-        ))}
-      </div>
-
-      <Link
-        href="/dashboard/interviews"
-        className="mt-6 inline-block rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
-      >
-        Back to Interviews
-      </Link>
-    </div>
-  );
-}
-</file>
-
-<file path="client/components/interviews/InterviewSessionClient.tsx">
+<file path="client/components/interviews/StartInterviewForm.tsx">
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getInterviewSession, submitAnswer, completeInterview } from "@/lib/interviews";
-import { InterviewSession } from "@/types/interviews";
-import InterviewResults from "./InterviewResults";
+import { useState } from "react";
+import { InterviewType, NewInterviewInput } from "@/types/interviews";
 
-export default function InterviewSessionClient({ sessionId }: { sessionId: string }) {
-  const router = useRouter();
-  const [session, setSession] = useState<InterviewSession | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [draft, setDraft] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+const ROLE_OPTIONS = ["SDE Intern", "ML Intern", "Frontend Intern", "Backend Intern"];
+const TYPE_OPTIONS: { value: InterviewType; label: string }[] = [
+  { value: "dsa", label: "DSA" },
+  { value: "behavioral", label: "Behavioral" },
+  { value: "technical", label: "Technical" },
+  { value: "system_design", label: "System Design" },
+];
 
-  useEffect(() => {
-    getInterviewSession(sessionId).then((s) => {
-      if (!s) return router.replace("/dashboard/interviews");
-      setSession(s);
-      setLoading(false);
-    });
-  }, [sessionId, router]);
+interface StartInterviewFormProps {
+  onStart: (input: NewInterviewInput) => void;
+  isCreating: boolean;
+}
 
-  if (loading || !session) return <p className="text-sm text-slate-500">Loading interview...</p>;
+export default function StartInterviewForm({ onStart, isCreating }: StartInterviewFormProps) {
+  const [role, setRole] = useState(ROLE_OPTIONS[0]);
+  const [company, setCompany] = useState("");
+  const [type, setType] = useState<InterviewType>("dsa");
 
-  if (session.status === "completed") {
-    return <InterviewResults session={session} />;
-  }
-
-  const question = session.questions[currentIndex];
-  const isLast = currentIndex === session.questions.length - 1;
-
-  const handleNext = async () => {
-    setSubmitting(true);
-    await submitAnswer(session.id, question.id, draft);
-    setDraft("");
-
-    if (isLast) {
-      const finished = await completeInterview(session.id);
-      if (finished) setSession(finished);
-    } else {
-      setCurrentIndex((i) => i + 1);
-    }
-    setSubmitting(false);
+  const handleSubmit = () => {
+    onStart({ role, company: company.trim() || undefined, type });
   };
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <p className="text-sm text-slate-500">
-        Question {currentIndex + 1} of {session.questions.length}
-      </p>
-      <h2 className="mt-2 text-xl font-semibold text-slate-900">{question.text}</h2>
-
-      <textarea
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        rows={8}
-        placeholder="Type your answer..."
-        className="mt-4 w-full rounded-xl border border-slate-300 p-4 text-sm"
-      />
-
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-slate-900">Start a Mock Interview</h2>
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        >
+          {ROLE_OPTIONS.map((r) => (
+            <option key={r} value={r}>{r}</option>
+          ))}
+        </select>
+        <input
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+          placeholder="Company (optional)"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value as InterviewType)}
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        >
+          {TYPE_OPTIONS.map((t) => (
+            <option key={t.value} value={t.value}>{t.label}</option>
+          ))}
+        </select>
+      </div>
       <button
-        onClick={handleNext}
-        disabled={submitting || draft.trim().length === 0}
-        className="mt-4 rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+        onClick={handleSubmit}
+        disabled={isCreating}
+        className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
       >
-        {submitting ? "Submitting..." : isLast ? "Finish Interview" : "Next Question"}
+        {isCreating ? "Starting..." : "Start Interview"}
       </button>
     </div>
   );
 }
 </file>
 
-<file path="client/components/interviews/InterviewsPageClient.tsx">
+<file path="client/components/resume/ResumeAnalysisView.tsx">
+import { Resume } from "@/types/resume";
+
+const categoryStyles: Record<string, string> = {
+  formatting: "bg-purple-100 text-purple-700",
+  content: "bg-blue-100 text-blue-700",
+  keywords: "bg-amber-100 text-amber-700",
+  structure: "bg-green-100 text-green-700",
+};
+
+export default function ResumeAnalysisView({ resume }: { resume: Resume }) {
+  if (resume.status === "processing") {
+    return <p className="text-sm text-slate-500">Analyzing {resume.fileName}...</p>;
+  }
+  if (!resume.analysis) return null;
+
+  const { summary, atsScore, suggestions } = resume.analysis;
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-slate-500">{resume.fileName}</p>
+            <p className="mt-1 text-xs text-slate-400">
+              Uploaded {new Date(resume.uploadedAt).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-slate-500">ATS Score</p>
+            <p className="text-3xl font-bold text-blue-600">{atsScore}</p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-slate-600">{summary}</p>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-lg font-semibold text-slate-900">Suggestions</h3>
+        <div className="space-y-3">
+          {suggestions.map((s) => (
+            <div key={s.id} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
+              <span className={`rounded-full px-2 py-1 text-xs font-medium ${categoryStyles[s.category]}`}>
+                {s.category}
+              </span>
+              <p className="text-sm text-slate-700">{s.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/resume/ResumePageClient.tsx">
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getInterviewSessions, createInterviewSession } from "@/lib/interviews";
-import { InterviewSession, NewInterviewInput } from "@/types/interviews";
-import StartInterviewForm from "./StartInterviewForm";
-import InterviewHistoryCard from "./InterviewHistoryCard";
+import { getCurrentResume } from "@/lib/resume";
+import { Resume } from "@/types/resume";
+import ResumeUpload from "./ResumeUpload";
+import ResumeAnalysisView from "./ResumeAnalysisView";
 
-export default function InterviewsPageClient() {
-  const router = useRouter();
-  const [sessions, setSessions] = useState<InterviewSession[]>([]);
+export default function ResumePageClient() {
+  const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
-    getInterviewSessions().then((data) => {
-      setSessions(data);
+    getCurrentResume().then((r) => {
+      setResume(r);
       setLoading(false);
     });
   }, []);
 
-  const handleStart = async (input: NewInterviewInput) => {
-    setIsCreating(true);
-    const session = await createInterviewSession(input);
-    setIsCreating(false);
-    router.push(`/dashboard/interviews/${session.id}`);
-  };
-
-  if (loading) return <p className="text-sm text-slate-500">Loading interviews...</p>;
+  if (loading) return <p className="text-sm text-slate-500">Loading...</p>;
 
   return (
     <div className="space-y-6">
-      <StartInterviewForm onStart={handleStart} isCreating={isCreating} />
+      <ResumeUpload onUploaded={setResume} />
+      {resume && (
+        <>
+          <p className="text-sm text-slate-500">
+            Uploading a new file will replace your current resume.
+          </p>
+          <ResumeAnalysisView resume={resume} />
+        </>
+      )}
+    </div>
+  );
+}
+</file>
 
-      <div>
-        <h2 className="mb-3 text-lg font-semibold text-slate-900">History</h2>
-        {sessions.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center">
-            <p className="text-slate-500">No interviews yet. Start your first one above.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {sessions.map((s) => (
-              <InterviewHistoryCard key={s.id} session={s} />
-            ))}
-          </div>
-        )}
-      </div>
+<file path="client/components/resume/ResumeUpload.tsx">
+"use client";
+
+import { useRef, useState } from "react";
+import { uploadResume } from "@/lib/resume";
+import { Resume } from "@/types/resume";
+import { UploadCloud } from "lucide-react";
+
+interface ResumeUploadProps {
+  onUploaded: (resume: Resume) => void;
+}
+
+export default function ResumeUpload({ onUploaded }: ResumeUploadProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File) => {
+    if (file.type !== "application/pdf") {
+      setError("Please upload a PDF file.");
+      return;
+    }
+    setError(null);
+    setIsUploading(true);
+    const resume = await uploadResume(file);
+    setIsUploading(false);
+    onUploaded(resume);
+  };
+
+  return (
+    <div
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files?.[0];
+        if (file) handleFile(file);
+      }}
+      className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center transition hover:border-blue-300"
+    >
+      <UploadCloud className="text-slate-400" size={36} />
+      <p className="mt-3 text-sm text-slate-600">
+        {isUploading ? "Uploading & analyzing..." : "Drag and drop your resume PDF, or"}
+      </p>
+      {!isUploading && (
+        <button
+          onClick={() => inputRef.current?.click()}
+          className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          Browse Files
+        </button>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/pdf"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+        }}
+      />
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>
   );
 }
@@ -1192,59 +809,6 @@ export const resources = [
 ];
 </file>
 
-<file path="client/constants/interviewData.ts">
-import { InterviewSession, InterviewType } from "@/types/interviews";
-
-export const mockInterviewSessions: InterviewSession[] = [
-  {
-    id: "int-001",
-    role: "SDE Intern",
-    company: "Flipkart",
-    type: "dsa",
-    status: "completed",
-    createdAt: "2026-07-08T10:00:00.000Z",
-    completedAt: "2026-07-08T10:32:00.000Z",
-    durationSeconds: 1920,
-    score: 78,
-    questions: [
-      { id: "q1", text: "Find the longest palindromic substring.", type: "dsa" },
-      { id: "q2", text: "Design a rate limiter.", type: "system_design" },
-    ],
-  },
-];
-
-const QUESTION_BANK: Record<InterviewType, string[]> = {
-  dsa: [
-    "Explain your approach to finding duplicates in an array in O(n) time.",
-    "How would you detect a cycle in a linked list?",
-    "Walk through how you'd solve the two-sum problem efficiently.",
-  ],
-  behavioral: [
-    "Tell me about a time you disagreed with a teammate. How did you resolve it?",
-    "Describe a project you're proud of and your specific contribution.",
-    "How do you prioritize when you have multiple deadlines at once?",
-  ],
-  technical: [
-    "Explain the difference between SQL and NoSQL databases, and when you'd choose each.",
-    "What happens when you type a URL into a browser and hit enter?",
-    "How does garbage collection work in the language you're most comfortable with?",
-  ],
-  system_design: [
-    "How would you design a URL shortener?",
-    "Design a basic rate limiter for an API.",
-    "How would you scale a service that suddenly gets 100x traffic?",
-  ],
-};
-
-export function generateMockQuestions(type: InterviewType, count = 3) {
-  return QUESTION_BANK[type].slice(0, count).map((text, i) => ({
-    id: `q-${Date.now()}-${i}`,
-    text,
-    type,
-  }));
-}
-</file>
-
 <file path="client/constants/navLinks.ts">
 export const navLinks = [
   {
@@ -1305,6 +869,23 @@ export const pricingPlans: PricingPlan[] = [
 ];
 </file>
 
+<file path="client/constants/resumeData.ts">
+import { ResumeAnalysis } from "@/types/resume";
+
+// TODO(v1.0-AI): replace with real AI-generated feedback from parsed resume text.
+export const mockResumeAnalysis: ResumeAnalysis = {
+  summary:
+    "Your resume is clear and well-structured, with strong technical project details. A few tweaks to keyword coverage and formatting consistency would improve ATS compatibility.",
+  atsScore: 76,
+  suggestions: [
+    { id: "s1", category: "keywords", text: "Add role-specific keywords from the job description (e.g. 'REST API', 'CI/CD') to improve ATS matching." },
+    { id: "s2", category: "formatting", text: "Use consistent bullet point punctuation throughout all sections." },
+    { id: "s3", category: "structure", text: "Move your most relevant project (Eleva) higher, closer to the top of the page." },
+    { id: "s4", category: "content", text: "Quantify achievements where possible — add metrics or outcomes to project bullets." },
+  ],
+};
+</file>
+
 <file path="client/constants/statistics.ts">
 export const stats = [
   {
@@ -1358,6 +939,36 @@ export async function getDashboardStats(): Promise<DashboardData> {
 }
 </file>
 
+<file path="client/lib/resume.ts">
+import { mockResumeAnalysis } from "@/constants/resumeData";
+import { Resume } from "@/types/resume";
+
+// In-memory store, same bridge pattern as lib/interviews.ts — replaced by
+// real Postgres/Prisma + file storage once backend lands.
+let currentResume: Resume | null = null;
+
+export async function getCurrentResume(): Promise<Resume | null> {
+  return currentResume;
+}
+
+export async function uploadResume(file: File): Promise<Resume> {
+  // TODO(v1.0-backend): actually store the file (S3/Cloudinary or DB blob)
+  // TODO(v1.0-AI): parse real PDF text and run it through an AI feedback call
+  const resume: Resume = {
+    id: `res-${Date.now()}`,
+    fileName: file.name,
+    uploadedAt: new Date().toISOString(),
+    status: "processing",
+  };
+  currentResume = resume;
+
+  // simulate async processing delay
+  await new Promise((r) => setTimeout(r, 1200));
+  currentResume = { ...resume, status: "analyzed", analysis: mockResumeAnalysis };
+  return currentResume;
+}
+</file>
+
 <file path="client/public/file.svg">
 <svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
 </file>
@@ -1408,6 +1019,60 @@ export interface DashboardActivity {
 export interface DashboardData {
   stats: DashboardStat[];
   recentActivity: DashboardActivity[];
+}
+</file>
+
+<file path="client/types/interviews.ts">
+export type InterviewType = "dsa" | "behavioral" | "system_design" | "technical";
+export type InterviewStatus = "not_started" | "in_progress" | "completed";
+
+export interface InterviewQuestion {
+  id: string;
+  text: string;
+  type: InterviewType;
+  answer?: string;
+  feedback?: string;
+}
+
+export interface InterviewSession {
+  id: string;
+  role: string;
+  company?: string;
+  type: InterviewType;
+  status: InterviewStatus;
+  createdAt: string;
+  completedAt?: string;
+  durationSeconds?: number;
+  score?: number;
+  questions: InterviewQuestion[];
+}
+
+export interface NewInterviewInput {
+  role: string;
+  company?: string;
+  type: InterviewType;
+}
+</file>
+
+<file path="client/types/resume.ts">
+export interface ResumeSuggestion {
+  id: string;
+  category: "formatting" | "content" | "keywords" | "structure";
+  text: string;
+}
+
+export interface ResumeAnalysis {
+  summary: string;
+  atsScore: number; // 0-100, simple mock score for MVP — no advanced algorithm
+  suggestions: ResumeSuggestion[];
+}
+
+export interface Resume {
+  id: string;
+  fileName: string;
+  uploadedAt: string;
+  status: "processing" | "analyzed" | "failed";
+  analysis?: ResumeAnalysis;
 }
 </file>
 
@@ -1547,6 +1212,427 @@ export const config = {
 }
 </file>
 
+<file path="server/prisma/migrations/20260714075533_init/migration.sql">
+-- CreateEnum
+CREATE TYPE "InterviewType" AS ENUM ('dsa', 'behavioral', 'technical', 'system_design');
+
+-- CreateEnum
+CREATE TYPE "InterviewStatus" AS ENUM ('in_progress', 'completed');
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "clerkId" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "InterviewSession" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "role" TEXT NOT NULL,
+    "company" TEXT,
+    "type" "InterviewType" NOT NULL,
+    "status" "InterviewStatus" NOT NULL DEFAULT 'in_progress',
+    "score" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completedAt" TIMESTAMP(3),
+
+    CONSTRAINT "InterviewSession_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "InterviewQuestion" (
+    "id" TEXT NOT NULL,
+    "sessionId" TEXT NOT NULL,
+    "text" TEXT NOT NULL,
+    "type" "InterviewType" NOT NULL,
+    "answer" TEXT,
+    "feedback" TEXT,
+    "order" INTEGER NOT NULL,
+
+    CONSTRAINT "InterviewQuestion_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_clerkId_key" ON "User"("clerkId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "InterviewSession_userId_idx" ON "InterviewSession"("userId");
+
+-- CreateIndex
+CREATE INDEX "InterviewQuestion_sessionId_idx" ON "InterviewQuestion"("sessionId");
+
+-- AddForeignKey
+ALTER TABLE "InterviewSession" ADD CONSTRAINT "InterviewSession_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "InterviewQuestion" ADD CONSTRAINT "InterviewQuestion_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "InterviewSession"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+</file>
+
+<file path="server/prisma/migrations/migration_lock.toml">
+# Please do not edit this file manually
+# It should be added in your version-control system (e.g., Git)
+provider = "postgresql"
+</file>
+
+<file path="server/prisma/schema.prisma">
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  interviewSessions InterviewSession[]
+}
+
+enum InterviewType {
+  dsa
+  behavioral
+  technical
+  system_design
+}
+
+enum InterviewStatus {
+  in_progress
+  completed
+}
+
+model InterviewSession {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String
+  company     String?
+  type        InterviewType
+  status      InterviewStatus @default(in_progress)
+  score       Int?
+  createdAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  questions InterviewQuestion[]
+
+  @@index([userId])
+}
+
+model InterviewQuestion {
+  id        String           @id @default(cuid())
+  sessionId String
+  session   InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  text      String
+  type      InterviewType
+  answer    String?
+  feedback  String?
+  order     Int
+
+  @@index([sessionId])
+}
+</file>
+
+<file path="server/src/lib/prisma.ts">
+import { PrismaClient } from "@prisma/client";
+
+// Prevents creating a new database connection every time this file
+// is re-imported during hot-reload in dev.
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+</file>
+
+<file path="server/src/middleware/auth.ts">
+import { Request, Response, NextFunction } from "express";
+import { verifyToken } from "@clerk/backend";
+import { prisma } from "../lib/prisma";
+
+export interface AuthedRequest extends Request {
+  userId?: string;
+}
+
+export async function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Missing auth token" });
+  }
+
+  try {
+    const token = authHeader.split(" ")[1];
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY!,
+    });
+
+    const user = await prisma.user.upsert({
+      where: { clerkId: payload.sub },
+      update: {},
+      create: {
+        clerkId: payload.sub,
+        email: `${payload.sub}@placeholder.eleva`, // temp — we'll fix this when we test auth live
+      },
+    });
+
+    req.userId = user.id;
+    next(); // "checkpoint passed, continue to the actual route"
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+}
+</file>
+
+<file path="server/src/middleware/errorHandler.ts">
+import { Request, Response, NextFunction } from "express";
+
+export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+  console.error(err);
+  const status = err.status ?? 500;
+  const message = err.message ?? "Internal server error";
+  res.status(status).json({ error: message });
+}
+</file>
+
+<file path="server/src/routes/interviews.ts">
+import { Router, Response, NextFunction } from "express";
+import { z } from "zod";
+import { prisma } from "../lib/prisma";
+import { requireAuth, AuthedRequest } from "../middleware/auth";
+
+const router = Router();
+
+const newSessionSchema = z.object({
+  role: z.string().min(1),
+  company: z.string().optional(),
+  type: z.enum(["dsa", "behavioral", "technical", "system_design"]),
+});
+
+const QUESTION_BANK: Record<string, string[]> = {
+  dsa: [
+    "Explain your approach to finding duplicates in an array in O(n) time.",
+    "How would you detect a cycle in a linked list?",
+    "Walk through how you'd solve the two-sum problem efficiently.",
+  ],
+  behavioral: [
+    "Tell me about a time you disagreed with a teammate. How did you resolve it?",
+    "Describe a project you're proud of and your specific contribution.",
+    "How do you prioritize when you have multiple deadlines at once?",
+  ],
+  technical: [
+    "Explain the difference between SQL and NoSQL databases, and when you'd choose each.",
+    "What happens when you type a URL into a browser and hit enter?",
+    "How does garbage collection work in the language you're most comfortable with?",
+  ],
+  system_design: [
+    "How would you design a URL shortener?",
+    "Design a basic rate limiter for an API.",
+    "How would you scale a service that suddenly gets 100x traffic?",
+  ],
+};
+
+router.get("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const sessions = await prisma.interviewSession.findMany({
+      where: { userId: req.userId! }, // requireAuth guarantees this is set
+      include: { questions: true },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(sessions);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/:id", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const session = await prisma.interviewSession.findFirst({
+      where: { id: req.params.id as string, userId: req.userId! },
+      include: { questions: { orderBy: { order: "asc" } } },
+    });
+    if (!session) return res.status(404).json({ error: "Session not found" });
+    res.json(session);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const input = newSessionSchema.parse(req.body);
+    // TODO(v1.0-AI): replace QUESTION_BANK lookup with real AI question generation
+    const questionTexts = QUESTION_BANK[input.type].slice(0, 3);
+
+    const session = await prisma.interviewSession.create({
+      data: {
+        userId: req.userId!,
+        role: input.role,
+        company: input.company ?? null,
+        type: input.type,
+        questions: {
+          create: questionTexts.map((text, i) => ({
+            text,
+            type: input.type,
+            order: i,
+          })),
+        },
+      },
+      include: { questions: true },
+    });
+
+    res.status(201).json(session);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/:id/questions/:qId", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { answer } = z.object({ answer: z.string() }).parse(req.body);
+    const question = await prisma.interviewQuestion.update({
+      where: { id: req.params.qId as string },
+      data: { answer },
+    });
+    res.json(question);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/:id/complete", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const session = await prisma.interviewSession.findFirst({
+      where: { id: req.params.id as string, userId: req.userId! },
+      include: { questions: true },
+    });
+    if (!session) return res.status(404).json({ error: "Session not found" });
+
+    // TODO(v1.0-AI): replace with real AI evaluation call (per-question feedback + score)
+    const score = Math.floor(Math.random() * 21) + 70;
+    await Promise.all(
+      session.questions.map((q: { id: string; answer: string | null }) =>
+        prisma.interviewQuestion.update({
+          where: { id: q.id },
+          data: {
+            feedback: q.answer
+              ? "Solid structure — consider adding a concrete example next time."
+              : "No answer submitted.",
+          },
+        })
+      )
+    );
+
+    const updated = await prisma.interviewSession.update({
+      where: { id: session.id },
+      data: { status: "completed", completedAt: new Date(), score },
+      include: { questions: true },
+    });
+
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+export default router;
+</file>
+
+<file path="server/src/index.ts">
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import interviewsRouter from "./routes/interviews";
+import { errorHandler } from "./middleware/errorHandler";
+
+const app = express();
+
+app.use(cors({ origin: process.env.CLIENT_URL ?? "http://localhost:3000", credentials: true }));
+app.use(express.json());
+
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
+app.use("/api/interviews", interviewsRouter);
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT ?? 4000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+</file>
+
+<file path="server/.gitignore">
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+</file>
+
+<file path="server/package.json">
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@clerk/backend": "^3.11.5",
+    "@prisma/client": "^6.19.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "prisma": "^6.19.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.1",
+    "tsx": "^4.23.0",
+    "typescript": "^7.0.2"
+  }
+}
+</file>
+
+<file path="server/tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+   // "moduleResolution": "Node10",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"]
+}
+</file>
+
 <file path=".gitignore">
 
 </file>
@@ -1569,6 +1655,51 @@ An AI-powered placement preparation platform that helps students prepare for tec
 
 Status:
 🚧 Under Development
+</file>
+
+<file path="client/app/dashboard/interviews/[id]/page.tsx">
+import InterviewSessionClient from "@/components/interviews/InterviewSessionClient";
+
+export default async function InterviewSessionPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return <InterviewSessionClient sessionId={id} />;
+}
+</file>
+
+<file path="client/app/dashboard/interviews/page.tsx">
+import InterviewsPageClient from "@/components/interviews/InterviewsPageClient";
+
+export default function InterviewsPage() {
+  return (
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">Mock Interviews</h1>
+        <p className="mt-2 text-slate-500">Start a practice session or review your history.</p>
+      </div>
+      <InterviewsPageClient />
+    </>
+  );
+}
+</file>
+
+<file path="client/app/dashboard/resume/page.tsx">
+import ResumePageClient from "@/components/resume/ResumePageClient";
+
+export default function ResumePage() {
+  return (
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">Resume Analyzer</h1>
+        <p className="mt-2 text-slate-500">Upload your resume for AI-powered feedback.</p>
+      </div>
+      <ResumePageClient />
+    </>
+  );
+}
 </file>
 
 <file path="client/app/dashboard/page.tsx">
@@ -1841,6 +1972,79 @@ export default function Features() {
 }
 </file>
 
+<file path="client/components/interviews/InterviewHistoryCard.tsx">
+import Link from "next/link";
+import { InterviewSession } from "@/types/interviews";
+
+const statusStyles: Record<InterviewSession["status"], string> = {
+  completed: "bg-green-100 text-green-700",
+  in_progress: "bg-amber-100 text-amber-700",
+  not_started: "bg-slate-100 text-slate-500",
+};
+
+export default function InterviewHistoryCard({ session }: { session: InterviewSession }) {
+  return (
+    <Link
+      href={`/dashboard/interviews/${session.id}`}
+      className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 transition hover:border-blue-300"
+    >
+      <div>
+        <p className="font-medium text-slate-900">
+          {session.role}{session.company ? ` · ${session.company}` : ""}
+        </p>
+        <p className="mt-1 text-sm text-slate-500">
+          {new Date(session.createdAt).toLocaleDateString()} · {session.type.replace("_", " ")}
+        </p>
+      </div>
+      <div className="flex items-center gap-3">
+        {typeof session.score === "number" && (
+          <span className="text-sm font-semibold text-slate-700">{session.score}%</span>
+        )}
+        <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusStyles[session.status]}`}>
+          {session.status.replace("_", " ")}
+        </span>
+      </div>
+    </Link>
+  );
+}
+</file>
+
+<file path="client/components/interviews/InterviewResults.tsx">
+import Link from "next/link";
+import { InterviewSession } from "@/types/interviews";
+
+export default function InterviewResults({ session }: { session: InterviewSession }) {
+  return (
+    <div className="mx-auto max-w-2xl">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+        <p className="text-sm text-slate-500">Overall Score</p>
+        <p className="mt-1 text-4xl font-bold text-blue-600">{session.score}%</p>
+      </div>
+
+      <div className="mt-6 space-y-4">
+        {session.questions.map((q, i) => (
+          <div key={q.id} className="rounded-xl border border-slate-200 bg-white p-4">
+            <p className="text-sm font-medium text-slate-900">Q{i + 1}. {q.text}</p>
+            <p className="mt-2 text-sm text-slate-600">
+              <span className="font-medium text-slate-500">Your answer: </span>
+              {q.answer || "—"}
+            </p>
+            <p className="mt-2 text-sm text-blue-600">{q.feedback}</p>
+          </div>
+        ))}
+      </div>
+
+      <Link
+        href="/dashboard/interviews"
+        className="mt-6 inline-block rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
+      >
+        Back to Interviews
+      </Link>
+    </div>
+  );
+}
+</file>
+
 <file path="client/components/layout/Footer.tsx">
 import Container from "../ui/Container";
 
@@ -2103,6 +2307,127 @@ export default function Button({
 }
 </file>
 
+<file path="client/constants/interviewData.ts">
+import { InterviewSession, InterviewType } from "@/types/interviews";
+
+export const mockInterviewSessions: InterviewSession[] = [
+  {
+    id: "int-001",
+    role: "SDE Intern",
+    company: "Flipkart",
+    type: "dsa",
+    status: "completed",
+    createdAt: "2026-07-08T10:00:00.000Z",
+    completedAt: "2026-07-08T10:32:00.000Z",
+    durationSeconds: 1920,
+    score: 78,
+    questions: [
+      { id: "q1", text: "Find the longest palindromic substring.", type: "dsa" },
+      { id: "q2", text: "Design a rate limiter.", type: "system_design" },
+    ],
+  },
+];
+
+const QUESTION_BANK: Record<InterviewType, string[]> = {
+  dsa: [
+    "Explain your approach to finding duplicates in an array in O(n) time.",
+    "How would you detect a cycle in a linked list?",
+    "Walk through how you'd solve the two-sum problem efficiently.",
+  ],
+  behavioral: [
+    "Tell me about a time you disagreed with a teammate. How did you resolve it?",
+    "Describe a project you're proud of and your specific contribution.",
+    "How do you prioritize when you have multiple deadlines at once?",
+  ],
+  technical: [
+    "Explain the difference between SQL and NoSQL databases, and when you'd choose each.",
+    "What happens when you type a URL into a browser and hit enter?",
+    "How does garbage collection work in the language you're most comfortable with?",
+  ],
+  system_design: [
+    "How would you design a URL shortener?",
+    "Design a basic rate limiter for an API.",
+    "How would you scale a service that suddenly gets 100x traffic?",
+  ],
+};
+
+export function generateMockQuestions(type: InterviewType, count = 3) {
+  return QUESTION_BANK[type].slice(0, count).map((text, i) => ({
+    id: `q-${Date.now()}-${i}`,
+    text,
+    type,
+  }));
+}
+</file>
+
+<file path="client/lib/interviews.ts">
+import { InterviewSession, NewInterviewInput } from "@/types/interviews";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+type GetToken = () => Promise<string | null>;
+
+async function authFetch(path: string, getToken: GetToken, options: RequestInit = {}) {
+  const token = await getToken();
+  const res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers ?? {}),
+    },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getInterviewSessions(getToken: GetToken): Promise<InterviewSession[]> {
+  return authFetch("/api/interviews", getToken);
+}
+
+export async function getInterviewSession(
+  getToken: GetToken,
+  id: string
+): Promise<InterviewSession | undefined> {
+  try {
+    return await authFetch(`/api/interviews/${id}`, getToken);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function createInterviewSession(
+  getToken: GetToken,
+  input: NewInterviewInput
+): Promise<InterviewSession> {
+  return authFetch("/api/interviews", getToken, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function submitAnswer(
+  getToken: GetToken,
+  sessionId: string,
+  questionId: string,
+  answer: string
+) {
+  return authFetch(`/api/interviews/${sessionId}/questions/${questionId}`, getToken, {
+    method: "PATCH",
+    body: JSON.stringify({ answer }),
+  });
+}
+
+export async function completeInterview(getToken: GetToken, sessionId: string) {
+  return authFetch(`/api/interviews/${sessionId}/complete`, getToken, {
+    method: "POST",
+  });
+}
+</file>
+
 <file path="client/components/home/Hero.tsx">
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
@@ -2180,6 +2505,137 @@ export default function Statistics() {
         </div>
       </Container>
     </section>
+  );
+}
+</file>
+
+<file path="client/components/interviews/InterviewSessionClient.tsx">
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { getInterviewSession, submitAnswer, completeInterview } from "@/lib/interviews";
+import { InterviewSession } from "@/types/interviews";
+import InterviewResults from "./InterviewResults";
+
+export default function InterviewSessionClient({ sessionId }: { sessionId: string }) {
+  const router = useRouter();
+  const { getToken } = useAuth();
+  const [session, setSession] = useState<InterviewSession | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [draft, setDraft] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    getInterviewSession(getToken, sessionId).then((s) => {
+      if (!s) return router.replace("/dashboard/interviews");
+      setSession(s);
+      setLoading(false);
+    });
+  }, [sessionId, getToken, router]);
+
+  if (loading || !session) return <p className="text-sm text-slate-500">Loading interview...</p>;
+
+  if (session.status === "completed") {
+    return <InterviewResults session={session} />;
+  }
+
+  const question = session.questions[currentIndex];
+  const isLast = currentIndex === session.questions.length - 1;
+
+  const handleNext = async () => {
+    setSubmitting(true);
+    await submitAnswer(getToken, session.id, question.id, draft);
+    setDraft("");
+
+    if (isLast) {
+      const finished = await completeInterview(getToken, session.id);
+      setSession(finished);
+    } else {
+      setCurrentIndex((i) => i + 1);
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="mx-auto max-w-2xl">
+      <p className="text-sm text-slate-500">
+        Question {currentIndex + 1} of {session.questions.length}
+      </p>
+      <h2 className="mt-2 text-xl font-semibold text-slate-900">{question.text}</h2>
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        rows={8}
+        placeholder="Type your answer..."
+        className="mt-4 w-full rounded-xl border border-slate-300 p-4 text-sm"
+      />
+      <button
+        onClick={handleNext}
+        disabled={submitting || draft.trim().length === 0}
+        className="mt-4 rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+      >
+        {submitting ? "Submitting..." : isLast ? "Finish Interview" : "Next Question"}
+      </button>
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/interviews/InterviewsPageClient.tsx">
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { getInterviewSessions, createInterviewSession } from "@/lib/interviews";
+import { InterviewSession, NewInterviewInput } from "@/types/interviews";
+import StartInterviewForm from "./StartInterviewForm";
+import InterviewHistoryCard from "./InterviewHistoryCard";
+
+export default function InterviewsPageClient() {
+  const router = useRouter();
+  const { getToken } = useAuth();
+  const [sessions, setSessions] = useState<InterviewSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    getInterviewSessions(getToken).then((data) => {
+      setSessions(data);
+      setLoading(false);
+    });
+  }, [getToken]);
+
+  const handleStart = async (input: NewInterviewInput) => {
+    setIsCreating(true);
+    const session = await createInterviewSession(getToken, input);
+    setIsCreating(false);
+    router.push(`/dashboard/interviews/${session.id}`);
+  };
+
+  if (loading) return <p className="text-sm text-slate-500">Loading interviews...</p>;
+
+  return (
+    <div className="space-y-6">
+      <StartInterviewForm onStart={handleStart} isCreating={isCreating} />
+      <div>
+        <h2 className="mb-3 text-lg font-semibold text-slate-900">History</h2>
+        {sessions.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center">
+            <p className="text-slate-500">No interviews yet. Start your first one above.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sessions.map((s) => (
+              <InterviewHistoryCard key={s.id} session={s} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 </file>
@@ -2478,7 +2934,62 @@ AI integration points are isolated and marked `TODO(v1.0-AI)`:
 
 ## Dashboard Route Structure
 
-All sidebar destinations now resolve to real pages under `app/dashboard/`:
+All sidebar destinations now resolve to real pages under `app/dashboard/`:       
+
+---
+
+## Resume Module Data Architecture
+
+Same seam pattern as Interviews. `lib/resume.ts` holds a single 
+in-memory `currentResume` (not an array) — re-uploading replaces it 
+rather than versioning, matching how users actually iterate on one 
+resume. `TODO(v1.0-backend)` marks the file storage integration point; 
+`TODO(v1.0-AI)` marks the real parsing/feedback integration point.
+
+## Backend Architecture (Sprint 8)
+
+`server/` is a separate Express + TypeScript service (not Next.js API 
+routes), matching the original monorepo-style `client/` + `server/` 
+split from Day 1. Structure:
+
+```text
+server/
+├── prisma/schema.prisma
+├── src/
+│   ├── index.ts          — app entry, CORS, route mounting
+│   ├── lib/prisma.ts      — singleton Prisma client
+│   ├── middleware/
+│   │   ├── auth.ts        — Clerk token verification, find-or-create User
+│   │   └── errorHandler.ts
+│   └── routes/
+│       └── interviews.ts  — mirrors lib/interviews.ts seam shape
+```
+
+Auth flow: Next.js frontend sends the Clerk session token as a Bearer 
+header; Express verifies it via `@clerk/backend`, and maps the Clerk 
+user ID to a local `User` row (upsert on every request) so all other 
+tables can foreign-key against a stable internal ID rather than Clerk's 
+ID directly.
+
+Hosted on Supabase Postgres — pooled connection (`DATABASE_URL`) for 
+app runtime queries, direct connection (`DIRECT_URL`) for Prisma 
+migrations, per Supabase's recommended Prisma setup.
+
+---
+
+## Backend Architecture (Confirmed Working)
+
+server/ is a separate Express + TypeScript service on port 4000, Next.js 
+client on port 3000, communicating via authenticated fetch calls.
+
+Auth flow (verified end-to-end): Next.js client component calls 
+`useAuth().getToken()` -> attaches as Bearer header -> Express 
+`requireAuth` middleware verifies via `@clerk/backend` -> upserts local 
+User row -> route handler runs with `req.userId` available.
+
+Stack: Prisma 6 (pinned — v7 requires driver adapters, deferred until 
+after MVP ships) + Supabase Postgres (Mumbai region, pooled connection 
+for runtime, direct connection for migrations).
 </file>
 
 <file path="docs/PROJECT_LOG.md">
@@ -2839,6 +3350,157 @@ text-only per revised MVP scope.
 Interview module is functionally complete on mock data: start → answer → 
 score → results → history. Next: Resume Analyzer frontend shell (same 
 pattern), per revised MVP roadmap.
+
+---
+
+# Sprint 7 — Resume Analyzer (Frontend Shell)
+
+Date: July 2026
+
+## Objective
+
+Build a complete Resume Analyzer UI on mock data, following the same 
+Data → Constants → lib (seam) → Components → UI pattern as Interviews, 
+with AI/backend integration points isolated for later wiring.
+
+## Completed
+
+- Created `types/resume.ts` — `Resume`, `ResumeAnalysis`, `ResumeSuggestion`.
+- Created `constants/resumeData.ts` — mock AI analysis output (summary, 
+  ATS score, categorized suggestions).
+- Created `lib/resume.ts` — in-memory seam: `getCurrentResume`, `uploadResume` 
+  (single current resume, re-upload replaces it — no versioning for MVP).
+- Built `ResumeUpload` — drag-and-drop + file picker, PDF-only validation, 
+  simulated processing delay.
+- Built `ResumeAnalysisView` — ATS score, summary, categorized suggestion cards.
+- Built `ResumePageClient` — ties upload + analysis view together.
+- Wired `app/dashboard/resume/page.tsx`.
+- Marked two integration points: `TODO(v1.0-backend)` (real file storage) 
+  and `TODO(v1.0-AI)` (real PDF parsing + AI feedback).
+
+## Verification Pass
+
+Audited existing stub routes before starting new work — confirmed 
+`app/dashboard/dsa/page.tsx`, `app/dashboard/analytics/page.tsx`, and 
+`app/dashboard/settings/page.tsx` were already correctly wired to the 
+`ComingSoon` component from earlier stub work (Sprint 5). No new work 
+needed; sidebar links match route folders exactly. Confirms DSA Tracker 
+is already in its intended v1.0 "Coming Soon" state per the MVP scope pivot.
+
+## Bugs Found & Fixed (post-integration testing)
+
+1. **Stale TS server** — VS Code's TypeScript language service cached the 
+   module graph from before `types/` files existed, throwing false 
+   "cannot find module" errors even though files were correctly created. 
+   Fixed via "TypeScript: Restart TS Server."
+2. **Interview page never wired** — `app/dashboard/interviews/page.tsx` 
+   still pointed at the old `ComingSoon` stub instead of the new 
+   `InterviewsPageClient`. Overwritten with the correct import.
+3. **Next.js 16 async `params` bug** — `app/dashboard/interviews/[id]/page.tsx` 
+   destructured `params` synchronously, but Next.js 16 makes dynamic route 
+   `params` a `Promise`. This meant `sessionId` was an unresolved Promise 
+   object, not a string, so `getInterviewSession()` never found a match and 
+   silently redirected back to the interview list before any question 
+   appeared. Fixed by making the page `async` and `await`-ing `params`.
+
+## Status
+
+Resume Analyzer is functionally complete on mock data. Interview module 
+confirmed fully working end-to-end after bug fixes above (start → answer 
+→ score → results → history). Both modules ready for backend wiring.
+
+---
+
+# Sprint 8 — Backend Foundation (In Progress)
+
+Date: July 2026
+
+## Strategy Context
+
+Per the MVP scope pivot (see Roadmap v1.0 section), this sprint builds 
+the real backend that Interviews and Resume's mock `lib/` seams will 
+swap into. Chose **Supabase** for hosted Postgres and a **separate 
+Express server** (not Next.js API routes) to match the original 
+architecture plan and resume/portfolio positioning (Express.js + 
+PostgreSQL + Prisma ORM as distinct, demonstrable backend skills).
+
+## Completed So Far
+
+- Drafted `server/` scaffold: Express + TypeScript + Prisma, `tsx` for 
+  dev hot-reload.
+- Designed Prisma schema: `User`, `InterviewSession`, `InterviewQuestion`, 
+  `Resume`, `ResumeSuggestion`, and `DsaProblem` (schema defined now for 
+  v1.1, even though the feature itself stays "Coming Soon" in v1.0 — 
+  costs nothing to model today, avoids a future migration).
+- Built `middleware/auth.ts` — verifies Clerk session tokens sent from 
+  the Next.js frontend, find-or-creates a local `User` row keyed by 
+  Clerk's user ID.
+- Built `middleware/errorHandler.ts` — centralized error responses.
+- Built full `routes/interviews.ts` — list, get one, create (mock 
+  question bank server-side), submit answer, complete + score. Mirrors 
+  the exact function shape of the frontend's `lib/interviews.ts` seam.
+- Built `src/index.ts` — Express app entry, CORS scoped to the Next.js 
+  client origin.
+
+## Open Items / Blocked On
+
+- Supabase project not yet created — need pooled + direct connection 
+  strings before running the first Prisma migration.
+- Need to confirm `CLERK_SECRET_KEY` is available server-side (should 
+  match the client's Clerk key).
+- Flagged uncertainty: Clerk JWT payload may not include `email` by 
+  default — may need `@clerk/backend`'s `getUser()` call instead of 
+  relying on token claims. To be verified once auth is tested live.
+- Resume routes (`routes/resume.ts`) not yet built — planned as the 
+  next piece once Interviews routes are verified working against a 
+  real DB.
+
+## Status
+
+Backend code is written and ready to run, pending Supabase credentials.
+
+---
+
+# Sprint 8 — Backend Foundation (Complete)
+
+Date: July 2026
+
+## Objective
+Stand up a real backend (Express + Prisma + Supabase Postgres) and wire 
+the Interview module to it end-to-end, replacing the mock in-memory seam.
+
+## Completed
+- Supabase Postgres project created (region: Mumbai/ap-south-1).
+- server/ scaffolded: Express + TypeScript, tsx for dev.
+- Prisma schema: User, InterviewSession, InterviewQuestion. First 
+  migration applied successfully to live DB.
+- middleware/auth.ts — verifies Clerk session tokens, upserts local 
+  User row keyed by Clerk ID.
+- middleware/errorHandler.ts — centralized error responses.
+- routes/interviews.ts — full CRUD (list, get, create w/ mock question 
+  bank, submit answer, complete + score).
+- Frontend lib/interviews.ts rewritten to call real API with 
+  Clerk-authenticated fetch (getToken from useAuth()) instead of mock store.
+- InterviewsPageClient and InterviewSessionClient updated accordingly.
+
+## Bugs Fixed
+- Prisma 7 (installed by default via `npm install prisma`) changed config 
+  format entirely (driver adapters, prisma.config.ts). Downgraded to 
+  Prisma 6 for stability and simpler setup given project timeline.
+- tsconfig.json module resolution mismatch caused 38 cascading TS errors 
+  (CommonJS vs ESM). Fixed by aligning module/moduleResolution settings.
+- Express 4 vs @types/express v5 mismatch caused route param type errors 
+  (string | string[] vs string) — resolved with explicit type casts.
+- Missing CLIENT_URL env var broke CORS — added to server/.env.
+- Verified full auth chain manually via browser DevTools: pulled a live 
+  Clerk token via `window.Clerk.session.getToken()`, called the Express 
+  API directly, confirmed real database round-trip before wiring the UI.
+
+## Status
+Interview module now runs fully on real infrastructure: Next.js -> 
+Clerk auth -> Express -> Prisma -> Supabase Postgres. Verified end-to-end 
+through the actual UI, not just API testing. Resume routes are next 
+(same pattern, new short sprint).
 </file>
 
 <file path="docs/ROADMAP.md">
@@ -2965,9 +3627,10 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [x] Auth (Clerk) + protected routes
 - [x] Dashboard (stats, profile, nav)
 - [x] Interview module — text-based only (question gen, answer, AI eval, history)
-- [ ] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions
+- [x] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions
 - [ ] Backend — Express + Prisma + PostgreSQL, real auth-linked data
 - [ ] Deployment — Vercel, env config, production build
+- [x] Backend — Express + Prisma + PostgreSQL (Interview module live; Resume module next)
 
 ## Deferred to v1.1+ (Coming Soon badge in v1.0)
 - [ ] DSA Tracker

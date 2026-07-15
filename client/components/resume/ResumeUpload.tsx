@@ -5,11 +5,14 @@ import { uploadResume } from "@/lib/resume";
 import { Resume } from "@/types/resume";
 import { UploadCloud } from "lucide-react";
 
+type GetToken = () => Promise<string | null>;
+
 interface ResumeUploadProps {
+  getToken: GetToken;
   onUploaded: (resume: Resume) => void;
 }
 
-export default function ResumeUpload({ onUploaded }: ResumeUploadProps) {
+export default function ResumeUpload({ getToken, onUploaded }: ResumeUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,9 +24,14 @@ export default function ResumeUpload({ onUploaded }: ResumeUploadProps) {
     }
     setError(null);
     setIsUploading(true);
-    const resume = await uploadResume(file);
-    setIsUploading(false);
-    onUploaded(resume);
+    try {
+      const resume = await uploadResume(getToken, file);
+      onUploaded(resume);
+    } catch {
+      setError("Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
