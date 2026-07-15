@@ -463,3 +463,46 @@ PostgreSQL + Prisma ORM as distinct, demonstrable backend skills).
 ## Status
 
 Backend code is written and ready to run, pending Supabase credentials.
+
+---
+
+# Sprint 8 — Backend Foundation (Complete)
+
+Date: July 2026
+
+## Objective
+Stand up a real backend (Express + Prisma + Supabase Postgres) and wire 
+the Interview module to it end-to-end, replacing the mock in-memory seam.
+
+## Completed
+- Supabase Postgres project created (region: Mumbai/ap-south-1).
+- server/ scaffolded: Express + TypeScript, tsx for dev.
+- Prisma schema: User, InterviewSession, InterviewQuestion. First 
+  migration applied successfully to live DB.
+- middleware/auth.ts — verifies Clerk session tokens, upserts local 
+  User row keyed by Clerk ID.
+- middleware/errorHandler.ts — centralized error responses.
+- routes/interviews.ts — full CRUD (list, get, create w/ mock question 
+  bank, submit answer, complete + score).
+- Frontend lib/interviews.ts rewritten to call real API with 
+  Clerk-authenticated fetch (getToken from useAuth()) instead of mock store.
+- InterviewsPageClient and InterviewSessionClient updated accordingly.
+
+## Bugs Fixed
+- Prisma 7 (installed by default via `npm install prisma`) changed config 
+  format entirely (driver adapters, prisma.config.ts). Downgraded to 
+  Prisma 6 for stability and simpler setup given project timeline.
+- tsconfig.json module resolution mismatch caused 38 cascading TS errors 
+  (CommonJS vs ESM). Fixed by aligning module/moduleResolution settings.
+- Express 4 vs @types/express v5 mismatch caused route param type errors 
+  (string | string[] vs string) — resolved with explicit type casts.
+- Missing CLIENT_URL env var broke CORS — added to server/.env.
+- Verified full auth chain manually via browser DevTools: pulled a live 
+  Clerk token via `window.Clerk.session.getToken()`, called the Express 
+  API directly, confirmed real database round-trip before wiring the UI.
+
+## Status
+Interview module now runs fully on real infrastructure: Next.js -> 
+Clerk auth -> Express -> Prisma -> Supabase Postgres. Verified end-to-end 
+through the actual UI, not just API testing. Resume routes are next 
+(same pattern, new short sprint).

@@ -124,6 +124,7 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [x] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions
 - [ ] Backend — Express + Prisma + PostgreSQL, real auth-linked data
 - [ ] Deployment — Vercel, env config, production build
+- [x] Backend — Express + Prisma + PostgreSQL (Interview module live; Resume module next)
 
 ## Deferred to v1.1+ (Coming Soon badge in v1.0)
 - [ ] DSA Tracker

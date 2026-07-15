@@ -246,3 +246,19 @@ ID directly.
 Hosted on Supabase Postgres — pooled connection (`DATABASE_URL`) for 
 app runtime queries, direct connection (`DIRECT_URL`) for Prisma 
 migrations, per Supabase's recommended Prisma setup.
+
+---
+
+## Backend Architecture (Confirmed Working)
+
+server/ is a separate Express + TypeScript service on port 4000, Next.js 
+client on port 3000, communicating via authenticated fetch calls.
+
+Auth flow (verified end-to-end): Next.js client component calls 
+`useAuth().getToken()` -> attaches as Bearer header -> Express 
+`requireAuth` middleware verifies via `@clerk/backend` -> upserts local 
+User row -> route handler runs with `req.userId` available.
+
+Stack: Prisma 6 (pinned — v7 requires driver adapters, deferred until 
+after MVP ships) + Supabase Postgres (Mumbai region, pooled connection 
+for runtime, direct connection for migrations).
