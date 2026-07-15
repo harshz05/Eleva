@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { getInterviewSessions, createInterviewSession } from "@/lib/interviews";
 import { InterviewSession, NewInterviewInput } from "@/types/interviews";
 import StartInterviewForm from "./StartInterviewForm";
@@ -9,20 +10,21 @@ import InterviewHistoryCard from "./InterviewHistoryCard";
 
 export default function InterviewsPageClient() {
   const router = useRouter();
+  const { getToken } = useAuth();
   const [sessions, setSessions] = useState<InterviewSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
-    getInterviewSessions().then((data) => {
+    getInterviewSessions(getToken).then((data) => {
       setSessions(data);
       setLoading(false);
     });
-  }, []);
+  }, [getToken]);
 
   const handleStart = async (input: NewInterviewInput) => {
     setIsCreating(true);
-    const session = await createInterviewSession(input);
+    const session = await createInterviewSession(getToken, input);
     setIsCreating(false);
     router.push(`/dashboard/interviews/${session.id}`);
   };
@@ -32,7 +34,6 @@ export default function InterviewsPageClient() {
   return (
     <div className="space-y-6">
       <StartInterviewForm onStart={handleStart} isCreating={isCreating} />
-
       <div>
         <h2 className="mb-3 text-lg font-semibold text-slate-900">History</h2>
         {sessions.length === 0 ? (

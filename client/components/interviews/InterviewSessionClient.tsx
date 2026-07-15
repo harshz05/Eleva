@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { getInterviewSession, submitAnswer, completeInterview } from "@/lib/interviews";
 import { InterviewSession } from "@/types/interviews";
 import InterviewResults from "./InterviewResults";
 
 export default function InterviewSessionClient({ sessionId }: { sessionId: string }) {
   const router = useRouter();
+  const { getToken } = useAuth();
   const [session, setSession] = useState<InterviewSession | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [draft, setDraft] = useState("");
@@ -15,12 +17,12 @@ export default function InterviewSessionClient({ sessionId }: { sessionId: strin
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getInterviewSession(sessionId).then((s) => {
+    getInterviewSession(getToken, sessionId).then((s) => {
       if (!s) return router.replace("/dashboard/interviews");
       setSession(s);
       setLoading(false);
     });
-  }, [sessionId, router]);
+  }, [sessionId, getToken, router]);
 
   if (loading || !session) return <p className="text-sm text-slate-500">Loading interview...</p>;
 
@@ -33,12 +35,12 @@ export default function InterviewSessionClient({ sessionId }: { sessionId: strin
 
   const handleNext = async () => {
     setSubmitting(true);
-    await submitAnswer(session.id, question.id, draft);
+    await submitAnswer(getToken, session.id, question.id, draft);
     setDraft("");
 
     if (isLast) {
-      const finished = await completeInterview(session.id);
-      if (finished) setSession(finished);
+      const finished = await completeInterview(getToken, session.id);
+      setSession(finished);
     } else {
       setCurrentIndex((i) => i + 1);
     }
@@ -51,7 +53,6 @@ export default function InterviewSessionClient({ sessionId }: { sessionId: strin
         Question {currentIndex + 1} of {session.questions.length}
       </p>
       <h2 className="mt-2 text-xl font-semibold text-slate-900">{question.text}</h2>
-
       <textarea
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
@@ -59,7 +60,6 @@ export default function InterviewSessionClient({ sessionId }: { sessionId: strin
         placeholder="Type your answer..."
         className="mt-4 w-full rounded-xl border border-slate-300 p-4 text-sm"
       />
-
       <button
         onClick={handleNext}
         disabled={submitting || draft.trim().length === 0}

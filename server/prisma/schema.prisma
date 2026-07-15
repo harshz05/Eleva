@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  interviewSessions InterviewSession[]
+}
+
+enum InterviewType {
+  dsa
+  behavioral
+  technical
+  system_design
+}
+
+enum InterviewStatus {
+  in_progress
+  completed
+}
+
+model InterviewSession {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String
+  company     String?
+  type        InterviewType
+  status      InterviewStatus @default(in_progress)
+  score       Int?
+  createdAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  questions InterviewQuestion[]
+
+  @@index([userId])
+}
+
+model InterviewQuestion {
+  id        String           @id @default(cuid())
+  sessionId String
+  session   InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  text      String
+  type      InterviewType
+  answer    String?
+  feedback  String?
+  order     Int
+
+  @@index([sessionId])
+}
