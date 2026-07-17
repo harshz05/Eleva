@@ -1,5 +1,6 @@
 import { Router, Response, NextFunction } from "express";
 import { z } from "zod";
+import { generateJSON } from "../lib/gemini";
 import { prisma } from "../lib/prisma";
 import { requireAuth, AuthedRequest } from "../middleware/auth";
 
@@ -11,33 +12,79 @@ const newSessionSchema = z.object({
   type: z.enum(["dsa", "behavioral", "technical", "system_design"]),
 });
 
-const QUESTION_BANK: Record<string, string[]> = {
-  dsa: [
-    "Explain your approach to finding duplicates in an array in O(n) time.",
-    "How would you detect a cycle in a linked list?",
-    "Walk through how you'd solve the two-sum problem efficiently.",
-  ],
-  behavioral: [
-    "Tell me about a time you disagreed with a teammate. How did you resolve it?",
-    "Describe a project you're proud of and your specific contribution.",
-    "How do you prioritize when you have multiple deadlines at once?",
-  ],
-  technical: [
-    "Explain the difference between SQL and NoSQL databases, and when you'd choose each.",
-    "What happens when you type a URL into a browser and hit enter?",
-    "How does garbage collection work in the language you're most comfortable with?",
-  ],
-  system_design: [
-    "How would you design a URL shortener?",
-    "Design a basic rate limiter for an API.",
-    "How would you scale a service that suddenly gets 100x traffic?",
-  ],
-};
+async function generateQuestions(role: string, company: string | undefined, type: string): Promise<string[]> {
+  const prompt = `You are a technical interviewer preparing questions for a mock interview.
+
+Candidate is interviewing for: ${role}${company ? ` at ${company}` : ""}
+Interview type: ${type}
+
+Generate exactly 3 interview questions appropriate for this role and type. Respond with ONLY a JSON object in this exact shape, no markdown fences, no extra text:
+{
+  "questions": ["question 1", "question 2", "question 3"]
+}`;
+
+  const raw = await generateJSON(prompt);
+
+  let parsed: { questions: string[] };
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error("AI returned malformed JSON");
+  }
+
+  if (!Array.isArray(parsed.questions) || parsed.questions.length !== 3 || parsed.questions.some((q) => typeof q !== "string")) {
+    throw new Error("AI response failed shape validation");
+  }
+
+  return parsed.questions;
+}
+
+interface EvalResult {
+  score: number;
+  feedback: { order: number; text: string }[];
+}
+
+async function evaluateAnswers(
+  role: string,
+  answered: { order: number; question: string; answer: string }[]
+): Promise<EvalResult> {
+  const prompt = `You are evaluating a candidate's mock interview answers for a ${role} position.
+
+Questions and answers:
+${answered.map((a) => `Q${a.order + 1}: ${a.question}\nA: ${a.answer}`).join("\n\n")}
+
+Respond with ONLY a JSON object in this exact shape, no markdown fences, no extra text:
+{
+  "score": <integer 0-100, overall assessment across all answers>,
+  "feedback": [
+    { "order": <matching question number, 0-indexed>, "text": "<1-2 sentence specific feedback on that answer>" }
+  ]
+}`;
+
+  const raw = await generateJSON(prompt);
+
+  let parsed: EvalResult;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error("AI returned malformed JSON");
+  }
+
+  if (
+    typeof parsed.score !== "number" ||
+    !Array.isArray(parsed.feedback) ||
+    parsed.feedback.some((f) => typeof f.order !== "number" || typeof f.text !== "string")
+  ) {
+    throw new Error("AI response failed shape validation");
+  }
+
+  return parsed;
+}
 
 router.get("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
   try {
     const sessions = await prisma.interviewSession.findMany({
-      where: { userId: req.userId! }, // requireAuth guarantees this is set
+      where: { userId: req.userId! },
       include: { questions: true },
       orderBy: { createdAt: "desc" },
     });
@@ -63,8 +110,14 @@ router.get("/:id", requireAuth, async (req: AuthedRequest, res: Response, next: 
 router.post("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
   try {
     const input = newSessionSchema.parse(req.body);
-    // TODO(v1.0-AI): replace QUESTION_BANK lookup with real AI question generation
-    const questionTexts = QUESTION_BANK[input.type].slice(0, 3);
+
+    let questionTexts: string[];
+    try {
+      questionTexts = await generateQuestions(input.role, input.company, input.type);
+    } catch (aiErr) {
+      console.error("Gemini question generation failed:", aiErr);
+      return res.status(502).json({ error: "AI question generation failed, please try again." });
+    }
 
     const session = await prisma.interviewSession.create({
       data: {
@@ -106,20 +159,34 @@ router.post("/:id/complete", requireAuth, async (req: AuthedRequest, res: Respon
   try {
     const session = await prisma.interviewSession.findFirst({
       where: { id: req.params.id as string, userId: req.userId! },
-      include: { questions: true },
+      include: { questions: { orderBy: { order: "asc" } } },
     });
     if (!session) return res.status(404).json({ error: "Session not found" });
 
-    // TODO(v1.0-AI): replace with real AI evaluation call (per-question feedback + score)
-    const score = Math.floor(Math.random() * 21) + 70;
+    const answered = session.questions
+      .map((q, i) => ({ order: i, question: q.text, answer: q.answer }))
+      .filter((q): q is { order: number; question: string; answer: string } => Boolean(q.answer));
+
+    let score = 0;
+    let feedbackByOrder = new Map<number, string>();
+
+    if (answered.length > 0) {
+      try {
+        const evalResult = await evaluateAnswers(session.role, answered);
+        score = evalResult.score;
+        feedbackByOrder = new Map(evalResult.feedback.map((f) => [f.order, f.text]));
+      } catch (aiErr) {
+        console.error("Gemini evaluation failed:", aiErr);
+        return res.status(502).json({ error: "AI evaluation failed, please try again." });
+      }
+    }
+
     await Promise.all(
-      session.questions.map((q: { id: string; answer: string | null }) =>
+      session.questions.map((q, i) =>
         prisma.interviewQuestion.update({
           where: { id: q.id },
           data: {
-            feedback: q.answer
-              ? "Solid structure — consider adding a concrete example next time."
-              : "No answer submitted.",
+            feedback: q.answer ? feedbackByOrder.get(i) ?? "No feedback generated." : "No answer submitted.",
           },
         })
       )
