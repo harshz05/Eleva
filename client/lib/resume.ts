@@ -7,6 +7,7 @@ type GetToken = () => Promise<string | null>;
 interface ApiResume {
   id: string;
   fileName: string;
+  fileUrl: string | null;
   status: "processing" | "analyzed" | "failed";
   atsScore: number | null;
   summary: string | null;
@@ -18,6 +19,7 @@ function mapToResume(api: ApiResume): Resume {
   return {
     id: api.id,
     fileName: api.fileName,
+    fileUrl: api.fileUrl ?? undefined,
     uploadedAt: api.createdAt,
     status: api.status,
     analysis:

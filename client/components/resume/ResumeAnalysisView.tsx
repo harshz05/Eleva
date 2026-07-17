@@ -28,6 +28,16 @@ export default function ResumeAnalysisView({ resume }: { resume: Resume }) {
           <div className="text-right">
             <p className="text-sm text-slate-500">ATS Score</p>
             <p className="text-3xl font-bold text-blue-600">{atsScore}</p>
+            {resume.fileUrl && (
+              <a
+                href={resume.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-block text-xs font-medium text-blue-600 hover:underline"
+              >
+                View PDF
+              </a>
+            )}
           </div>
         </div>
         <p className="mt-4 text-sm text-slate-600">{summary}</p>

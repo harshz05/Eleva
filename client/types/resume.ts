@@ -6,13 +6,14 @@ export interface ResumeSuggestion {
 
 export interface ResumeAnalysis {
   summary: string;
-  atsScore: number; // 0-100, simple mock score for MVP — no advanced algorithm
+  atsScore: number; // 0-100, AI-generated ATS score
   suggestions: ResumeSuggestion[];
 }
 
 export interface Resume {
   id: string;
   fileName: string;
+  fileUrl?: string;
   uploadedAt: string;
   status: "processing" | "analyzed" | "failed";
   analysis?: ResumeAnalysis;

@@ -2,13 +2,14 @@ import { Router, Response, NextFunction } from "express";
 import multer from "multer";
 import pdfParse from "pdf-parse";
 import { generateJSON } from "../lib/gemini";
+import { supabase, RESUME_BUCKET } from "../lib/supabase";
 import { prisma } from "../lib/prisma";
 import { requireAuth, AuthedRequest } from "../middleware/auth";
 
 const router = Router();
 
 const upload = multer({
-  storage: multer.memoryStorage(), // TODO(v1.0-backend): swap for real storage (S3/Cloudinary), currently file bytes are discarded after analysis
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype !== "application/pdf") {
@@ -17,6 +18,8 @@ const upload = multer({
     cb(null, true);
   },
 });
+
+const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour — regenerated on every fetch, so short-lived is fine
 
 interface AnalysisResult {
   atsScore: number;
@@ -64,13 +67,28 @@ ${resumeText}`;
   return parsed;
 }
 
+async function withSignedUrl<T extends { fileUrl: string | null }>(resume: T | null): Promise<T | null> {
+  if (!resume || !resume.fileUrl) return resume;
+
+  const { data, error } = await supabase.storage
+    .from(RESUME_BUCKET)
+    .createSignedUrl(resume.fileUrl, SIGNED_URL_TTL_SECONDS);
+
+  if (error) {
+    console.error("Failed to generate signed URL:", error);
+    return resume; // fall back to returning the raw path rather than failing the whole request
+  }
+
+  return { ...resume, fileUrl: data.signedUrl };
+}
+
 router.get("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
   try {
     const resume = await prisma.resume.findFirst({
       where: { userId: req.userId! },
       include: { suggestions: true },
     });
-    res.json(resume);
+    res.json(await withSignedUrl(resume));
   } catch (err) {
     next(err);
   }
@@ -103,13 +121,29 @@ router.post(
         return res.status(502).json({ error: "AI analysis failed, please try again." });
       }
 
+      const sanitizedName = req.file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+const storagePath = `${req.userId}/${Date.now()}-${sanitizedName}`;
+      const { error: uploadError } = await supabase.storage
+        .from(RESUME_BUCKET)
+        .upload(storagePath, req.file.buffer, { contentType: "application/pdf", upsert: false });
+
+      if (uploadError) {
+        console.error("Supabase Storage upload failed:", uploadError);
+        return res.status(502).json({ error: "File storage failed, please try again." });
+      }
+
+      // Re-upload replaces the existing resume — clean up the old file in storage too, not just the DB row
+      const previous = await prisma.resume.findFirst({ where: { userId: req.userId! } });
+      if (previous?.fileUrl) {
+        await supabase.storage.from(RESUME_BUCKET).remove([previous.fileUrl]);
+      }
       await prisma.resume.deleteMany({ where: { userId: req.userId! } });
 
       const resume = await prisma.resume.create({
         data: {
           userId: req.userId!,
           fileName: req.file.originalname,
-          fileUrl: null,
+          fileUrl: storagePath,
           status: "analyzed",
           atsScore: analysis.atsScore,
           summary: analysis.summary,
@@ -118,7 +152,7 @@ router.post(
         include: { suggestions: true },
       });
 
-      res.status(201).json(resume);
+      res.status(201).json(await withSignedUrl(resume));
     } catch (err) {
       next(err);
     }
