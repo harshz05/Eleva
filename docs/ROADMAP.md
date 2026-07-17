@@ -73,14 +73,14 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 
 ---
 
-# Phase 5 — AI Interview Engine (mocked, real AI next sprint)
+# Phase 5 — AI Interview Engine ✅
 
 - [x] Resume Upload
-- [ ] Resume Parsing (real, TODO(v1.0-AI))
-- [ ] AI Question Generation (real, TODO(v1.0-AI))
-- [x] AI Mock Interview (text-based, mocked evaluation)
-- [ ] AI Feedback (real, TODO(v1.0-AI))
-- [x] Interview Reports (mocked scoring)
+- [x] Resume Parsing
+- [x] AI Question Generation
+- [x] AI Mock Interview (text-based)
+- [x] AI Feedback
+- [x] Interview Reports
 
 ---
 
@@ -120,7 +120,7 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [x] Interview module — text-based only (question gen, answer, AI eval, history) — backend live, AI mocked
 - [x] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions — backend live, AI mocked
 - [x] Backend — Express + Prisma + PostgreSQL, real auth-linked data (both modules)
-- [ ] Real AI integration (Interview + Resume) — next sprint
+- [x] Real AI integration (Interview + Resume) — next sprint
 - [ ] Deployment — Vercel, env config, production build
 
 ## Deferred to v1.1+ (Coming Soon badge in v1.0)

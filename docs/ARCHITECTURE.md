@@ -289,3 +289,40 @@ File storage remains out of scope: `server/src/routes/resume.ts` uses
 `TODO(v1.0-backend)` real storage (S3/Cloudinary) is wired. ATS scoring 
 and suggestions remain `TODO(v1.0-AI)` mocked server-side, same 
 isolation pattern as the Interview module's question bank / scoring.
+
+## Real AI Integration (Sprint 10)
+
+`server/src/lib/gemini.ts` is a shared client wrapping `@google/genai` 
+(the current SDK — the older `@google/generative-ai` package is deprecated 
+and was swapped out mid-sprint after hitting persistent 503s tied to its 
+legacy endpoint). `generateJSON(prompt)` is the single entry point both 
+routes use: it calls Gemini with JSON response mode, retries up to 2 extra 
+times specifically on transient 503/overloaded errors (not on malformed 
+output — that fails fast, correctly), and returns the raw text for the 
+caller to parse and shape-validate.
+
+Model used: `gemini-flash-lite-latest`. The heavier `gemini-flash-latest` 
+hit sustained free-tier demand overload during dev; the lite tier proved 
+reliably available. Using the `-latest` alias rather than a pinned version 
+is deliberate — a hardcoded model name (`gemini-2.5-flash`) broke mid-sprint 
+when Google deprecated that generation entirely, so the alias trades a 
+little version predictability for not breaking again the same way.
+
+Both `resume.ts` and `interviews.ts` follow the same pattern: build a 
+prompt demanding a specific JSON shape, call `generateJSON`, `JSON.parse` 
+the result, then manually shape-validate every field before trusting it 
+(AI output is treated as untrusted input, same as any external API). A 
+validation failure or a JSON parse failure both throw and surface as a 
+502 to the client — this is a new failure mode the app didn't have before 
+(a working HTTP round-trip that still fails because the AI's output was 
+malformed), distinct from normal HTTP/DB errors.
+
+Interview evaluation only calls the AI for questions the candidate 
+actually answered — unanswered questions get a static "No answer 
+submitted." locally, same as the old mock, without spending an API call 
+on nothing.
+
+No client-side changes were needed for either module — response shapes 
+are identical to the mocked versions, so `lib/interviews.ts` and 
+`lib/resume.ts` didn't change at all. This is the seam pattern paying off 
+exactly as intended.

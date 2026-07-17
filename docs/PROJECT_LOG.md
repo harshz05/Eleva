@@ -154,23 +154,40 @@ Frontend (Sprint 9 additions):
     watch` directly in PowerShell fails with CommandNotFoundException. Use 
     `npm run dev` (the package.json script) or `npx tsx watch src/index.ts`.
 
+11. **Google's Gemini Node SDK churn**: `@google/generative-ai` is now a 
+    deprecated legacy package — use `@google/genai` instead 
+    (`npm install @google/genai`), the API shape differs 
+    (`ai.models.generateContent({model, contents, config})` vs the old 
+    `getGenerativeModel().generateContent()`). Also, hardcoded model 
+    names go stale fast — `gemini-2.5-flash` was deprecated mid-project. 
+    Prefer `-latest` aliases (`gemini-flash-lite-latest`) over pinned 
+    version names for exactly this reason. Free-tier flash models can 
+    also hit sustained 503 "high demand" errors at peak times — the lite 
+    tier and a retry-with-backoff (see gemini.ts) both help.    
+
 ## NEXT PLANNED SPRINT (where we left off)
-Wire real AI for both modules — the last non-deployment piece:
-1. Choose provider (OpenAI likely, TBD) and add API key to server/.env
-2. Interview module: replace QUESTION_BANK lookup in 
-   POST /api/interviews with real AI question generation; replace the 
-   random-score mock in POST /:id/complete with real per-question 
-   evaluation + feedback
-3. Resume module: replace mockAnalyze() in POST /api/resume with real PDF 
-   text extraction + AI-generated ATS score/summary/suggestions
-4. Both TODO(v1.0-AI) markers are already isolated to single functions in 
-   each route file — this sprint should be a clean swap, no structural 
-   changes needed
-5. Test end-to-end, commit, update docs
+## NEXT PLANNED SPRINT (where we left off)
+AI integration is done — real file storage for resumes next (small, 
+self-contained), then deployment:
+1. Real resume file storage (S3, Cloudinary, or similar) — swap the 
+   TODO(v1.0-backend) marker in resume.ts, persist fileUrl properly
+2. Deployment prep: Vercel for client, decide hosting for server/ 
+   (Railway/Render are common Express + Prisma choices), production env 
+   vars, CORS config for prod URLs
+3. Final end-to-end smoke test on production
+4. Update docs, final commit
 
-After that: real file storage for resumes (TODO(v1.0-backend)), then 
-deployment prep (Vercel + env config + production build).
+Timeline check: Sprint 10 (real AI, both modules) complete. Deploy target 
+July 30 still realistic — file storage is small, deployment is the last 
+real unknown.
+### Explicitly stubbed / deferred (by design, not unfinished):
+- Resume file bytes are NOT persisted anywhere (no S3/Cloudinary yet) — 
+  TODO(v1.0-backend) in server/src/routes/resume.ts
+- DSA Tracker, Analytics, Settings — all render ComingSoon.tsx, intentional 
+  per MVP scope
 
-Timeline check: Sprint 9 (Resume backend) complete. Deploy target July 30 
-still realistic if pace holds — AI integration sprint next, then storage, 
-then deploy.
+### AI integration — COMPLETE (Sprint 10):
+- Both Interview question generation/evaluation and Resume ATS 
+  analysis now call real Google Gemini (gemini-flash-lite-latest via 
+  @google/genai), not mocks. No TODO(v1.0-AI) markers remain in either 
+  route file.
