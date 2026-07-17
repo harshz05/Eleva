@@ -163,23 +163,29 @@ Frontend (Sprint 9 additions):
     Prefer `-latest` aliases (`gemini-flash-lite-latest`) over pinned 
     version names for exactly this reason. Free-tier flash models can 
     also hit sustained 503 "high demand" errors at peak times — the lite 
-    tier and a retry-with-backoff (see gemini.ts) both help.    
+    tier and a retry-with-backoff (see gemini.ts) both help.  
+ 12. **tsx watch doesn't reload on .env changes**: only source file edits 
+    trigger a restart. After editing .env, always Ctrl+C and restart 
+    npm run dev manually — otherwise the process keeps running with 
+    stale env values, which looks exactly like a config bug but isn't.     
 
 ## NEXT PLANNED SPRINT (where we left off)
-## NEXT PLANNED SPRINT (where we left off)
-AI integration is done — real file storage for resumes next (small, 
-self-contained), then deployment:
-1. Real resume file storage (S3, Cloudinary, or similar) — swap the 
-   TODO(v1.0-backend) marker in resume.ts, persist fileUrl properly
-2. Deployment prep: Vercel for client, decide hosting for server/ 
-   (Railway/Render are common Express + Prisma choices), production env 
-   vars, CORS config for prod URLs
-3. Final end-to-end smoke test on production
-4. Update docs, final commit
+Deployment — the last piece before v1.0 ships:
+1. Client: deploy to Vercel, production env vars (NEXT_PUBLIC_API_URL 
+   pointing at the deployed backend, Clerk production keys)
+2. Server: pick a host for the Express app (Railway/Render are the 
+   common choices for Express + Prisma) — Vercel serverless doesn't fit 
+   a long-running Express server well
+3. Production CORS config (CLIENT_URL env var needs the real deployed 
+   client URL, not localhost)
+4. Update all API keys to production values where relevant (Clerk, 
+   Gemini, Supabase already work as-is since they're not environment-specific)
+5. Final end-to-end smoke test on the live URLs
+6. Update docs, final commit
 
-Timeline check: Sprint 10 (real AI, both modules) complete. Deploy target 
-July 30 still realistic — file storage is small, deployment is the last 
-real unknown.
+Timeline check: All backend functionality (auth, both modules, real AI, 
+real file storage) is complete and verified. Only deployment remains 
+before v1.0. Deploy target July 30 — comfortable margin left.
 ### Explicitly stubbed / deferred (by design, not unfinished):
 - Resume file bytes are NOT persisted anywhere (no S3/Cloudinary yet) — 
   TODO(v1.0-backend) in server/src/routes/resume.ts

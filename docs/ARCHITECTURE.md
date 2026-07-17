@@ -326,3 +326,25 @@ No client-side changes were needed for either module — response shapes
 are identical to the mocked versions, so `lib/interviews.ts` and 
 `lib/resume.ts` didn't change at all. This is the seam pattern paying off 
 exactly as intended.
+
+## Resume File Storage (Sprint 11)
+
+`server/src/lib/supabase.ts` holds a Supabase client authenticated with 
+the service role/secret key — full access, backend-only, never exposed 
+to `client/`. Files go into a private `resumes` bucket.
+
+The `Resume.fileUrl` column stores the storage **path** 
+(`userId/timestamp-filename.pdf`), not a permanent link — the bucket is 
+private, so any signed URL has an expiry. Rather than store a link that 
+eventually breaks, `resume.ts` generates a fresh 1-hour signed URL on 
+every `GET`/`POST` response via `withSignedUrl()`. The DB never holds a 
+URL that can go stale; the API response always does.
+
+Re-upload deletes the previous file from storage (not just the DB row) 
+before creating the new one, keeping the bucket from accumulating orphaned 
+files as users iterate on their resume.
+
+Filenames are sanitized before being used in the storage path (special 
+characters stripped) since Storage object keys are stricter than 
+Postgres columns about allowed characters — the original filename is 
+preserved separately for display.
