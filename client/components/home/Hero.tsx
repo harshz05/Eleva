@@ -17,6 +17,7 @@ export default function Hero() {
             <Sparkles size={16} className="mr-2" />
             AI-Powered Placement Preparation
           </Badge>
+
           <h1 className="mt-6 text-5xl font-extrabold tracking-tight md:text-6xl">
             Ace Your Next
             <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
@@ -37,7 +38,11 @@ export default function Hero() {
             <Button
               variant="outline"
               className="!text-white !border-slate-600 hover:!bg-white/10"
-              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() =>
+                document.getElementById("about")?.scrollIntoView({
+                  behavior: "smooth",
+                })
+              }
             >
               Learn More
             </Button>
