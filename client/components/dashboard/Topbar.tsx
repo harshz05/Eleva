@@ -13,9 +13,7 @@ export default function Topbar() {
         </p>
       </div>
 
-      <UserButton
-        afterSignOutUrl="/"
-      />
+      <UserButton />
     </header>
   );
 }
