@@ -34,7 +34,11 @@ export default function Hero() {
               Get Started
             </Button>
 
-            <Button variant="outline" className="!text-white !border-slate-600 hover:!bg-white/10">
+            <Button
+              variant="outline"
+              className="!text-white !border-slate-600 hover:!bg-white/10"
+              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+            >
               Learn More
             </Button>
           </div>

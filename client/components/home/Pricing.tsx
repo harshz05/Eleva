@@ -1,3 +1,6 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import Container from "../ui/Container";
 import SectionHeading from "../ui/SectionHeading";
 import Card from "../ui/Card";
@@ -8,11 +11,13 @@ import { pricingPlans } from "@/constants/pricing";
 import { Check } from "lucide-react";
 
 export default function Pricing() {
+  const router = useRouter();
+
   return (
     <section
-  id="pricing"
-  className="bg-slate-100 py-20 text-slate-900"
->
+      id="pricing"
+      className="bg-slate-100 py-20 text-slate-900"
+    >
       <Container>
         <SectionHeading
           title="Simple Pricing"
@@ -23,11 +28,11 @@ export default function Pricing() {
           {pricingPlans.map((plan) => (
             <Card
               key={plan.name}
-             className={`flex flex-col transition-all duration-300 ${
-  plan.popular
-    ? "border-blue-600 shadow-xl scale-105 hover:scale-110"
-    : "hover:-translate-y-1 hover:shadow-xl"
-}`}
+              className={`flex flex-col transition-all duration-300 ${
+                plan.popular
+                  ? "border-blue-600 shadow-xl scale-105 hover:scale-110"
+                  : "hover:-translate-y-1 hover:shadow-xl"
+              }`}
             >
               {plan.popular && (
                 <div className="mb-4">
@@ -60,7 +65,10 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <Button className="mt-8 w-full">
+              <Button
+                className="mt-8 w-full"
+                onClick={() => router.push("/sign-up")}
+              >
                 {plan.popular ? "Upgrade to Pro" : "Start Free"}
               </Button>
             </Card>

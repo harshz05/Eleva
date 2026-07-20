@@ -140,16 +140,21 @@ server/
     migrations/
       20260714075533_init/
         migration.sql
+      20260715213821_add_resume_models/
+        migration.sql
       migration_lock.toml
     schema.prisma
   src/
     lib/
+      gemini.ts
       prisma.ts
+      supabase.ts
     middleware/
       auth.ts
       errorHandler.ts
     routes/
       interviews.ts
+      resume.ts
     index.ts
   .gitignore
   package.json
@@ -251,7 +256,7 @@ import { SignIn } from "@clerk/nextjs";
 export default function Page() {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <SignIn />
+      <SignIn forceRedirectUrl="/dashboard" />
     </div>
   );
 }
@@ -263,7 +268,7 @@ import { SignUp } from "@clerk/nextjs";
 export default function Page() {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <SignUp />
+      <SignUp forceRedirectUrl="/dashboard" />
     </div>
   );
 }
@@ -310,30 +315,6 @@ export default function DashboardLayout({
         </main>
       </div>
     </div>
-  );
-}
-</file>
-
-<file path="client/components/dashboard/Topbar.tsx">
-import { UserButton } from "@clerk/nextjs";
-
-export default function Topbar() {
-  return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-5">
-      <div>
-        <h2 className="text-2xl font-bold">
-          Dashboard
-        </h2>
-
-        <p className="text-slate-500">
-           Continue your placement preparation journey.
-        </p>
-      </div>
-
-      <UserButton
-        afterSignOutUrl="/"
-      />
-    </header>
   );
 }
 </file>
@@ -413,58 +394,6 @@ export default function Pricing() {
 }
 </file>
 
-<file path="client/components/home/Testimonials.tsx">
-import Card from "@/components/ui/Card";
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
-import { Star } from "lucide-react";
-import { testimonials } from "@/constants/testimonials";
-
-
-export default function Testimonials() {
-  return (
-    <section className="py-24">
-      <Container>
-        <SectionHeading
-          title="Loved by Students"
-          subtitle="Thousands of aspiring engineers trust Eleva to prepare for technical interviews."
-        />
-
-        <div className="grid gap-8 md:grid-cols-3">
-          {testimonials.map(({ name, role, quote }) => (
-            <Card key={name}>
-              <div className="mb-4 flex gap-1 text-yellow-500">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Star
-                    key={index}
-                    size={18}
-                    fill="currentColor"
-                  />
-                ))}
-              </div>
-
-              <p className="italic text-slate-600">
-                "{quote}"
-              </p>
-
-              <div className="mt-6">
-                <h3 className="font-semibold">
-                  {name}
-                </h3>
-
-                <p className="text-sm text-slate-500">
-                  {role}
-                </p>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </Container>
-    </section>
-  );
-}
-</file>
-
 <file path="client/components/interviews/StartInterviewForm.tsx">
 "use client";
 
@@ -529,165 +458,6 @@ export default function StartInterviewForm({ onStart, isCreating }: StartIntervi
       >
         {isCreating ? "Starting..." : "Start Interview"}
       </button>
-    </div>
-  );
-}
-</file>
-
-<file path="client/components/resume/ResumeAnalysisView.tsx">
-import { Resume } from "@/types/resume";
-
-const categoryStyles: Record<string, string> = {
-  formatting: "bg-purple-100 text-purple-700",
-  content: "bg-blue-100 text-blue-700",
-  keywords: "bg-amber-100 text-amber-700",
-  structure: "bg-green-100 text-green-700",
-};
-
-export default function ResumeAnalysisView({ resume }: { resume: Resume }) {
-  if (resume.status === "processing") {
-    return <p className="text-sm text-slate-500">Analyzing {resume.fileName}...</p>;
-  }
-  if (!resume.analysis) return null;
-
-  const { summary, atsScore, suggestions } = resume.analysis;
-
-  return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-slate-500">{resume.fileName}</p>
-            <p className="mt-1 text-xs text-slate-400">
-              Uploaded {new Date(resume.uploadedAt).toLocaleDateString()}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-slate-500">ATS Score</p>
-            <p className="text-3xl font-bold text-blue-600">{atsScore}</p>
-          </div>
-        </div>
-        <p className="mt-4 text-sm text-slate-600">{summary}</p>
-      </div>
-
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-slate-900">Suggestions</h3>
-        <div className="space-y-3">
-          {suggestions.map((s) => (
-            <div key={s.id} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
-              <span className={`rounded-full px-2 py-1 text-xs font-medium ${categoryStyles[s.category]}`}>
-                {s.category}
-              </span>
-              <p className="text-sm text-slate-700">{s.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-</file>
-
-<file path="client/components/resume/ResumePageClient.tsx">
-"use client";
-
-import { useEffect, useState } from "react";
-import { getCurrentResume } from "@/lib/resume";
-import { Resume } from "@/types/resume";
-import ResumeUpload from "./ResumeUpload";
-import ResumeAnalysisView from "./ResumeAnalysisView";
-
-export default function ResumePageClient() {
-  const [resume, setResume] = useState<Resume | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getCurrentResume().then((r) => {
-      setResume(r);
-      setLoading(false);
-    });
-  }, []);
-
-  if (loading) return <p className="text-sm text-slate-500">Loading...</p>;
-
-  return (
-    <div className="space-y-6">
-      <ResumeUpload onUploaded={setResume} />
-      {resume && (
-        <>
-          <p className="text-sm text-slate-500">
-            Uploading a new file will replace your current resume.
-          </p>
-          <ResumeAnalysisView resume={resume} />
-        </>
-      )}
-    </div>
-  );
-}
-</file>
-
-<file path="client/components/resume/ResumeUpload.tsx">
-"use client";
-
-import { useRef, useState } from "react";
-import { uploadResume } from "@/lib/resume";
-import { Resume } from "@/types/resume";
-import { UploadCloud } from "lucide-react";
-
-interface ResumeUploadProps {
-  onUploaded: (resume: Resume) => void;
-}
-
-export default function ResumeUpload({ onUploaded }: ResumeUploadProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleFile = async (file: File) => {
-    if (file.type !== "application/pdf") {
-      setError("Please upload a PDF file.");
-      return;
-    }
-    setError(null);
-    setIsUploading(true);
-    const resume = await uploadResume(file);
-    setIsUploading(false);
-    onUploaded(resume);
-  };
-
-  return (
-    <div
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
-        e.preventDefault();
-        const file = e.dataTransfer.files?.[0];
-        if (file) handleFile(file);
-      }}
-      className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center transition hover:border-blue-300"
-    >
-      <UploadCloud className="text-slate-400" size={36} />
-      <p className="mt-3 text-sm text-slate-600">
-        {isUploading ? "Uploading & analyzing..." : "Drag and drop your resume PDF, or"}
-      </p>
-      {!isUploading && (
-        <button
-          onClick={() => inputRef.current?.click()}
-          className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          Browse Files
-        </button>
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/pdf"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleFile(file);
-        }}
-      />
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>
   );
 }
@@ -939,36 +709,6 @@ export async function getDashboardStats(): Promise<DashboardData> {
 }
 </file>
 
-<file path="client/lib/resume.ts">
-import { mockResumeAnalysis } from "@/constants/resumeData";
-import { Resume } from "@/types/resume";
-
-// In-memory store, same bridge pattern as lib/interviews.ts — replaced by
-// real Postgres/Prisma + file storage once backend lands.
-let currentResume: Resume | null = null;
-
-export async function getCurrentResume(): Promise<Resume | null> {
-  return currentResume;
-}
-
-export async function uploadResume(file: File): Promise<Resume> {
-  // TODO(v1.0-backend): actually store the file (S3/Cloudinary or DB blob)
-  // TODO(v1.0-AI): parse real PDF text and run it through an AI feedback call
-  const resume: Resume = {
-    id: `res-${Date.now()}`,
-    fileName: file.name,
-    uploadedAt: new Date().toISOString(),
-    status: "processing",
-  };
-  currentResume = resume;
-
-  // simulate async processing delay
-  await new Promise((r) => setTimeout(r, 1200));
-  currentResume = { ...resume, status: "analyzed", analysis: mockResumeAnalysis };
-  return currentResume;
-}
-</file>
-
 <file path="client/public/file.svg">
 <svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
 </file>
@@ -1051,28 +791,6 @@ export interface NewInterviewInput {
   role: string;
   company?: string;
   type: InterviewType;
-}
-</file>
-
-<file path="client/types/resume.ts">
-export interface ResumeSuggestion {
-  id: string;
-  category: "formatting" | "content" | "keywords" | "structure";
-  text: string;
-}
-
-export interface ResumeAnalysis {
-  summary: string;
-  atsScore: number; // 0-100, simple mock score for MVP — no advanced algorithm
-  suggestions: ResumeSuggestion[];
-}
-
-export interface Resume {
-  id: string;
-  fileName: string;
-  uploadedAt: string;
-  status: "processing" | "analyzed" | "failed";
-  analysis?: ResumeAnalysis;
 }
 </file>
 
@@ -1276,72 +994,86 @@ ALTER TABLE "InterviewSession" ADD CONSTRAINT "InterviewSession_userId_fkey" FOR
 ALTER TABLE "InterviewQuestion" ADD CONSTRAINT "InterviewQuestion_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "InterviewSession"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 </file>
 
+<file path="server/prisma/migrations/20260715213821_add_resume_models/migration.sql">
+-- CreateEnum
+CREATE TYPE "ResumeStatus" AS ENUM ('processing', 'analyzed', 'failed');
+
+-- CreateEnum
+CREATE TYPE "SuggestionCategory" AS ENUM ('formatting', 'content', 'keywords', 'structure');
+
+-- CreateTable
+CREATE TABLE "Resume" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "fileName" TEXT NOT NULL,
+    "fileUrl" TEXT,
+    "status" "ResumeStatus" NOT NULL DEFAULT 'processing',
+    "atsScore" INTEGER,
+    "summary" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Resume_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ResumeSuggestion" (
+    "id" TEXT NOT NULL,
+    "resumeId" TEXT NOT NULL,
+    "category" "SuggestionCategory" NOT NULL,
+    "text" TEXT NOT NULL,
+
+    CONSTRAINT "ResumeSuggestion_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Resume_userId_key" ON "Resume"("userId");
+
+-- CreateIndex
+CREATE INDEX "ResumeSuggestion_resumeId_idx" ON "ResumeSuggestion"("resumeId");
+
+-- AddForeignKey
+ALTER TABLE "Resume" ADD CONSTRAINT "Resume_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ResumeSuggestion" ADD CONSTRAINT "ResumeSuggestion_resumeId_fkey" FOREIGN KEY ("resumeId") REFERENCES "Resume"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+</file>
+
 <file path="server/prisma/migrations/migration_lock.toml">
 # Please do not edit this file manually
 # It should be added in your version-control system (e.g., Git)
 provider = "postgresql"
 </file>
 
-<file path="server/prisma/schema.prisma">
-generator client {
-  provider = "prisma-client-js"
-}
+<file path="server/src/lib/gemini.ts">
+import { GoogleGenAI } from "@google/genai";
 
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+const MODEL_NAME = "gemini-flash-lite-latest"; // lite tier — less demand congestion than flash-latest, proven working
 
-model User {
-  id        String   @id @default(cuid())
-  clerkId   String   @unique
-  email     String   @unique
-  createdAt DateTime @default(now())
+export async function generateJSON(prompt: string): Promise<string> {
+  const maxAttempts = 3;
+  let lastError: unknown;
 
-  interviewSessions InterviewSession[]
-}
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const result = await ai.models.generateContent({
+        model: MODEL_NAME,
+        contents: prompt,
+        config: { responseMimeType: "application/json", temperature: 0.4 },
+      });
+      return (result.text ?? "").trim();
+    } catch (err) {
+      lastError = err;
+      const isRetryable = err instanceof Error && /503|overloaded|UNAVAILABLE/i.test(err.message);
+      if (isRetryable && attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1500)); // 1.5s, then 3s
+        continue;
+      }
+      throw err;
+    }
+  }
 
-enum InterviewType {
-  dsa
-  behavioral
-  technical
-  system_design
-}
-
-enum InterviewStatus {
-  in_progress
-  completed
-}
-
-model InterviewSession {
-  id          String          @id @default(cuid())
-  userId      String
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role        String
-  company     String?
-  type        InterviewType
-  status      InterviewStatus @default(in_progress)
-  score       Int?
-  createdAt   DateTime        @default(now())
-  completedAt DateTime?
-
-  questions InterviewQuestion[]
-
-  @@index([userId])
-}
-
-model InterviewQuestion {
-  id        String           @id @default(cuid())
-  sessionId String
-  session   InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  text      String
-  type      InterviewType
-  answer    String?
-  feedback  String?
-  order     Int
-
-  @@index([sessionId])
+  throw lastError;
 }
 </file>
 
@@ -1355,6 +1087,17 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 export const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+</file>
+
+<file path="server/src/lib/supabase.ts">
+import { createClient } from "@supabase/supabase-js";
+
+export const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export const RESUME_BUCKET = "resumes";
 </file>
 
 <file path="server/src/middleware/auth.ts">
@@ -1406,213 +1149,12 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
 }
 </file>
 
-<file path="server/src/routes/interviews.ts">
-import { Router, Response, NextFunction } from "express";
-import { z } from "zod";
-import { prisma } from "../lib/prisma";
-import { requireAuth, AuthedRequest } from "../middleware/auth";
-
-const router = Router();
-
-const newSessionSchema = z.object({
-  role: z.string().min(1),
-  company: z.string().optional(),
-  type: z.enum(["dsa", "behavioral", "technical", "system_design"]),
-});
-
-const QUESTION_BANK: Record<string, string[]> = {
-  dsa: [
-    "Explain your approach to finding duplicates in an array in O(n) time.",
-    "How would you detect a cycle in a linked list?",
-    "Walk through how you'd solve the two-sum problem efficiently.",
-  ],
-  behavioral: [
-    "Tell me about a time you disagreed with a teammate. How did you resolve it?",
-    "Describe a project you're proud of and your specific contribution.",
-    "How do you prioritize when you have multiple deadlines at once?",
-  ],
-  technical: [
-    "Explain the difference between SQL and NoSQL databases, and when you'd choose each.",
-    "What happens when you type a URL into a browser and hit enter?",
-    "How does garbage collection work in the language you're most comfortable with?",
-  ],
-  system_design: [
-    "How would you design a URL shortener?",
-    "Design a basic rate limiter for an API.",
-    "How would you scale a service that suddenly gets 100x traffic?",
-  ],
-};
-
-router.get("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
-  try {
-    const sessions = await prisma.interviewSession.findMany({
-      where: { userId: req.userId! }, // requireAuth guarantees this is set
-      include: { questions: true },
-      orderBy: { createdAt: "desc" },
-    });
-    res.json(sessions);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.get("/:id", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
-  try {
-    const session = await prisma.interviewSession.findFirst({
-      where: { id: req.params.id as string, userId: req.userId! },
-      include: { questions: { orderBy: { order: "asc" } } },
-    });
-    if (!session) return res.status(404).json({ error: "Session not found" });
-    res.json(session);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.post("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
-  try {
-    const input = newSessionSchema.parse(req.body);
-    // TODO(v1.0-AI): replace QUESTION_BANK lookup with real AI question generation
-    const questionTexts = QUESTION_BANK[input.type].slice(0, 3);
-
-    const session = await prisma.interviewSession.create({
-      data: {
-        userId: req.userId!,
-        role: input.role,
-        company: input.company ?? null,
-        type: input.type,
-        questions: {
-          create: questionTexts.map((text, i) => ({
-            text,
-            type: input.type,
-            order: i,
-          })),
-        },
-      },
-      include: { questions: true },
-    });
-
-    res.status(201).json(session);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.patch("/:id/questions/:qId", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
-  try {
-    const { answer } = z.object({ answer: z.string() }).parse(req.body);
-    const question = await prisma.interviewQuestion.update({
-      where: { id: req.params.qId as string },
-      data: { answer },
-    });
-    res.json(question);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.post("/:id/complete", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
-  try {
-    const session = await prisma.interviewSession.findFirst({
-      where: { id: req.params.id as string, userId: req.userId! },
-      include: { questions: true },
-    });
-    if (!session) return res.status(404).json({ error: "Session not found" });
-
-    // TODO(v1.0-AI): replace with real AI evaluation call (per-question feedback + score)
-    const score = Math.floor(Math.random() * 21) + 70;
-    await Promise.all(
-      session.questions.map((q: { id: string; answer: string | null }) =>
-        prisma.interviewQuestion.update({
-          where: { id: q.id },
-          data: {
-            feedback: q.answer
-              ? "Solid structure — consider adding a concrete example next time."
-              : "No answer submitted.",
-          },
-        })
-      )
-    );
-
-    const updated = await prisma.interviewSession.update({
-      where: { id: session.id },
-      data: { status: "completed", completedAt: new Date(), score },
-      include: { questions: true },
-    });
-
-    res.json(updated);
-  } catch (err) {
-    next(err);
-  }
-});
-
-export default router;
-</file>
-
-<file path="server/src/index.ts">
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import interviewsRouter from "./routes/interviews";
-import { errorHandler } from "./middleware/errorHandler";
-
-const app = express();
-
-app.use(cors({ origin: process.env.CLIENT_URL ?? "http://localhost:3000", credentials: true }));
-app.use(express.json());
-
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
-app.use("/api/interviews", interviewsRouter);
-
-app.use(errorHandler);
-
-const PORT = process.env.PORT ?? 4000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-</file>
-
 <file path="server/.gitignore">
 node_modules
 # Keep environment variables out of version control
 .env
 
 /src/generated/prisma
-</file>
-
-<file path="server/package.json">
-{
-  "name": "server",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "@clerk/backend": "^3.11.5",
-    "@prisma/client": "^6.19.3",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "prisma": "^6.19.3",
-    "zod": "^4.4.3"
-  },
-  "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/node": "^26.1.1",
-    "tsx": "^4.23.0",
-    "typescript": "^7.0.2"
-  }
-}
 </file>
 
 <file path="server/tsconfig.json">
@@ -1768,50 +1310,6 @@ html {
 }
 </file>
 
-<file path="client/app/layout.tsx">
-import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { Geist, Geist_Mono } from "next/font/google";
-
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: {
-    default: "Eleva",
-    template: "%s | Eleva",
-  },
-  description:
-    "AI-powered placement preparation platform with mock interviews, DSA roadmap, resume analysis and personalized feedback.",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col"><ClerkProvider>
-          {children}
-        </ClerkProvider></body>
-    </html>
-  );
-}
-</file>
-
 <file path="client/components/dashboard/DashboardCard.tsx">
 import {
   Brain,
@@ -1921,6 +1419,28 @@ export default function Sidebar() {
 }
 </file>
 
+<file path="client/components/dashboard/Topbar.tsx">
+import { UserButton } from "@clerk/nextjs";
+
+export default function Topbar() {
+  return (
+    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-5">
+      <div>
+        <h2 className="text-2xl font-bold">
+          Dashboard
+        </h2>
+
+        <p className="text-slate-500">
+           Continue your placement preparation journey.
+        </p>
+      </div>
+
+      <UserButton />
+    </header>
+  );
+}
+</file>
+
 <file path="client/components/home/Features.tsx">
 import Card from "@/components/ui/Card";
 import Container from "@/components/ui/Container";
@@ -1963,6 +1483,58 @@ export default function Features() {
               <p className="text-slate-600">
                 {description}
               </p>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+</file>
+
+<file path="client/components/home/Testimonials.tsx">
+import Card from "@/components/ui/Card";
+import Container from "@/components/ui/Container";
+import SectionHeading from "@/components/ui/SectionHeading";
+import { Star } from "lucide-react";
+import { testimonials } from "@/constants/testimonials";
+
+
+export default function Testimonials() {
+  return (
+    <section id="testimonials" className="py-24">
+      <Container>
+        <SectionHeading
+          title="Loved by Students"
+          subtitle="Thousands of aspiring engineers trust Eleva to prepare for technical interviews."
+        />
+
+        <div className="grid gap-8 md:grid-cols-3">
+          {testimonials.map(({ name, role, quote }) => (
+            <Card key={name}>
+              <div className="mb-4 flex gap-1 text-yellow-500">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Star
+                    key={index}
+                    size={18}
+                    fill="currentColor"
+                  />
+                ))}
+              </div>
+
+              <p className="italic text-slate-600">
+                "{quote}"
+              </p>
+
+              <div className="mt-6">
+                <h3 className="font-semibold">
+                  {name}
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  {role}
+                </p>
+              </div>
             </Card>
           ))}
         </div>
@@ -2162,91 +1734,181 @@ export default function Footer() {
 }
 </file>
 
-<file path="client/components/layout/Navbar.tsx">
-"use client";
+<file path="client/components/resume/ResumeAnalysisView.tsx">
+import { Resume } from "@/types/resume";
 
-import { useState } from "react";
+const categoryStyles: Record<string, string> = {
+  formatting: "bg-purple-100 text-purple-700",
+  content: "bg-blue-100 text-blue-700",
+  keywords: "bg-amber-100 text-amber-700",
+  structure: "bg-green-100 text-green-700",
+};
 
-import Container from "../ui/Container";
+export default function ResumeAnalysisView({ resume }: { resume: Resume }) {
+  if (resume.status === "processing") {
+    return <p className="text-sm text-slate-500">Analyzing {resume.fileName}...</p>;
+  }
+  if (!resume.analysis) return null;
 
-import { Menu, X } from "lucide-react";
-
-import { navLinks } from "@/constants/navLinks";
-
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { summary, atsScore, suggestions } = resume.analysis;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-slate-800 bg-black/80 backdrop-blur-md">
-      <Container>
-        <div className="flex h-20 items-center justify-between">
-
-          {/* Logo */}
-
-          <h1 className="cursor-pointer text-2xl font-bold transition-colors duration-300 hover:text-blue-400">
-            Eleva
-          </h1>
-
-          {/* Desktop Navigation */}
-
-          <div className="hidden items-center gap-8 md:flex">
-
-            {navLinks.map((link) => (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-slate-500">{resume.fileName}</p>
+            <p className="mt-1 text-xs text-slate-400">
+              Uploaded {new Date(resume.uploadedAt).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-slate-500">ATS Score</p>
+            <p className="text-3xl font-bold text-blue-600">{atsScore}</p>
+            {resume.fileUrl && (
               <a
-                key={link.name}
-                href={link.href}
-                className="text-slate-300 transition-colors duration-300 hover:text-blue-400"
+                href={resume.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-block text-xs font-medium text-blue-600 hover:underline"
               >
-                {link.name}
+                View PDF
               </a>
-            ))}
-
-            <button className="rounded-lg bg-white px-5 py-2 font-medium text-black transition hover:bg-slate-200">
-              Get Started
-            </button>
-
+            )}
           </div>
-
-          {/* Mobile Button */}
-
-          <button
-            className="md:hidden"
-            onClick={() => setIsOpen((prev) => !prev)}
-          >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-
         </div>
+        <p className="mt-4 text-sm text-slate-600">{summary}</p>
+      </div>
 
-        {/* Mobile Menu */}
-
-        {isOpen && (
-          <div className="border-t border-slate-800 py-6 md:hidden">
-
-            <div className="flex flex-col gap-6">
-
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="text-slate-300 transition-colors hover:text-white"
-                >
-                  {link.name}
-                </a>
-              ))}
-
-              <button className="rounded-lg bg-white py-3 font-medium text-black">
-                Get Started
-              </button>
-
+      <div>
+        <h3 className="mb-3 text-lg font-semibold text-slate-900">Suggestions</h3>
+        <div className="space-y-3">
+          {suggestions.map((s) => (
+            <div key={s.id} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
+              <span className={`rounded-full px-2 py-1 text-xs font-medium ${categoryStyles[s.category]}`}>
+                {s.category}
+              </span>
+              <p className="text-sm text-slate-700">{s.text}</p>
             </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+</file>
 
-          </div>
-        )}
+<file path="client/components/resume/ResumePageClient.tsx">
+"use client";
 
-      </Container>
-    </nav>
+import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { getCurrentResume } from "@/lib/resume";
+import { Resume } from "@/types/resume";
+import ResumeUpload from "./ResumeUpload";
+import ResumeAnalysisView from "./ResumeAnalysisView";
+
+export default function ResumePageClient() {
+  const { getToken } = useAuth();
+  const [resume, setResume] = useState<Resume | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getCurrentResume(getToken).then((r) => {
+      setResume(r);
+      setLoading(false);
+    });
+  }, [getToken]);
+
+  if (loading) return <p className="text-sm text-slate-500">Loading...</p>;
+
+  return (
+    <div className="space-y-6">
+      <ResumeUpload getToken={getToken} onUploaded={setResume} />
+      {resume && (
+        <>
+          <p className="text-sm text-slate-500">
+            Uploading a new file will replace your current resume.
+          </p>
+          <ResumeAnalysisView resume={resume} />
+        </>
+      )}
+    </div>
+  );
+}
+</file>
+
+<file path="client/components/resume/ResumeUpload.tsx">
+"use client";
+
+import { useRef, useState } from "react";
+import { uploadResume } from "@/lib/resume";
+import { Resume } from "@/types/resume";
+import { UploadCloud } from "lucide-react";
+
+type GetToken = () => Promise<string | null>;
+
+interface ResumeUploadProps {
+  getToken: GetToken;
+  onUploaded: (resume: Resume) => void;
+}
+
+export default function ResumeUpload({ getToken, onUploaded }: ResumeUploadProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File) => {
+    if (file.type !== "application/pdf") {
+      setError("Please upload a PDF file.");
+      return;
+    }
+    setError(null);
+    setIsUploading(true);
+    try {
+      const resume = await uploadResume(getToken, file);
+      onUploaded(resume);
+    } catch {
+      setError("Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files?.[0];
+        if (file) handleFile(file);
+      }}
+      className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center transition hover:border-blue-300"
+    >
+      <UploadCloud className="text-slate-400" size={36} />
+      <p className="mt-3 text-sm text-slate-600">
+        {isUploading ? "Uploading & analyzing..." : "Drag and drop your resume PDF, or"}
+      </p>
+      {!isUploading && (
+        <button
+          onClick={() => inputRef.current?.click()}
+          className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          Browse Files
+        </button>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/pdf"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+        }}
+      />
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+    </div>
   );
 }
 </file>
@@ -2428,83 +2090,403 @@ export async function completeInterview(getToken: GetToken, sessionId: string) {
 }
 </file>
 
-<file path="client/components/home/Hero.tsx">
-import Button from "@/components/ui/Button";
-import Container from "@/components/ui/Container";
-import Badge from "@/components/ui/Badge";
-import { Sparkles } from "lucide-react";
+<file path="client/types/resume.ts">
+export interface ResumeSuggestion {
+  id: string;
+  category: "formatting" | "content" | "keywords" | "structure";
+  text: string;
+}
 
-export default function Hero() {
-  return (
-    <section className="py-24">
-      <Container>
-        <div className="mx-auto max-w-3xl text-center">
-          <Badge>
-           <Sparkles size={16} className="mr-2" />
-           AI-Powered Placement Preparation
-          </Badge>
-          <h1 className="mt-6 text-5xl font-extrabold tracking-tight md:text-6xl">
-            Ace Your Next
-            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-  {" "}Technical Interview
-</span>
-          </h1>
+export interface ResumeAnalysis {
+  summary: string;
+  atsScore: number; // 0-100, AI-generated ATS score
+  suggestions: ResumeSuggestion[];
+}
 
-          <p className="mt-6 text-lg leading-8 text-slate-600">
-            Practice AI-powered mock interviews, receive personalized
-            feedback, and track your improvement—all in one place.
-          </p>
-
-          <div className="mt-10 flex justify-center gap-4">
-            <Button>
-              Get Started
-            </Button>
-
-            <Button variant="outline">
-              Learn More
-            </Button>
-          </div>
-        </div>
-      </Container>
-    </section>
-  );
+export interface Resume {
+  id: string;
+  fileName: string;
+  fileUrl?: string;
+  uploadedAt: string;
+  status: "processing" | "analyzed" | "failed";
+  analysis?: ResumeAnalysis;
 }
 </file>
 
-<file path="client/components/home/Statistics.tsx">
-import Container from "@/components/ui/Container";
-import SectionHeading from "@/components/ui/SectionHeading";
-import Card from "@/components/ui/Card";
-import { stats } from "@/constants/statistics";
+<file path="server/prisma/schema.prisma">
+generator client {
+  provider = "prisma-client-js"
+}
 
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
 
-export default function Statistics() {
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  interviewSessions InterviewSession[]
+  resume            Resume?
+}
+
+enum InterviewType {
+  dsa
+  behavioral
+  technical
+  system_design
+}
+
+enum InterviewStatus {
+  in_progress
+  completed
+}
+
+model InterviewSession {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String
+  company     String?
+  type        InterviewType
+  status      InterviewStatus @default(in_progress)
+  score       Int?
+  createdAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  questions InterviewQuestion[]
+
+  @@index([userId])
+}
+
+model InterviewQuestion {
+  id        String           @id @default(cuid())
+  sessionId String
+  session   InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  text      String
+  type      InterviewType
+  answer    String?
+  feedback  String?
+  order     Int
+
+  @@index([sessionId])
+}
+
+enum ResumeStatus {
+  processing
+  analyzed
+  failed
+}
+
+enum SuggestionCategory {
+  formatting
+  content
+  keywords
+  structure
+}
+
+model Resume {
+  id        String       @id @default(cuid())
+  userId    String       @unique
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName  String
+  fileUrl   String? // TODO(v1.0-backend): real storage URL, null until wired
+  status    ResumeStatus @default(processing)
+  atsScore  Int?
+  summary   String?
+  createdAt DateTime     @default(now())
+
+  suggestions ResumeSuggestion[]
+}
+
+model ResumeSuggestion {
+  id       String             @id @default(cuid())
+  resumeId String
+  resume   Resume             @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  category SuggestionCategory
+  text     String
+
+  @@index([resumeId])
+}
+</file>
+
+<file path="server/src/routes/interviews.ts">
+import { Router, Response, NextFunction } from "express";
+import { z } from "zod";
+import { generateJSON } from "../lib/gemini";
+import { prisma } from "../lib/prisma";
+import { requireAuth, AuthedRequest } from "../middleware/auth";
+
+const router = Router();
+
+const newSessionSchema = z.object({
+  role: z.string().min(1),
+  company: z.string().optional(),
+  type: z.enum(["dsa", "behavioral", "technical", "system_design"]),
+});
+
+async function generateQuestions(role: string, company: string | undefined, type: string): Promise<string[]> {
+  const prompt = `You are a technical interviewer preparing questions for a mock interview.
+
+Candidate is interviewing for: ${role}${company ? ` at ${company}` : ""}
+Interview type: ${type}
+
+Generate exactly 3 interview questions appropriate for this role and type. Respond with ONLY a JSON object in this exact shape, no markdown fences, no extra text:
+{
+  "questions": ["question 1", "question 2", "question 3"]
+}`;
+
+  const raw = await generateJSON(prompt);
+
+  let parsed: { questions: string[] };
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error("AI returned malformed JSON");
+  }
+
+  if (!Array.isArray(parsed.questions) || parsed.questions.length !== 3 || parsed.questions.some((q) => typeof q !== "string")) {
+    throw new Error("AI response failed shape validation");
+  }
+
+  return parsed.questions;
+}
+
+interface EvalResult {
+  score: number;
+  feedback: { order: number; text: string }[];
+}
+
+async function evaluateAnswers(
+  role: string,
+  answered: { order: number; question: string; answer: string }[]
+): Promise<EvalResult> {
+  const prompt = `You are evaluating a candidate's mock interview answers for a ${role} position.
+
+Questions and answers:
+${answered.map((a) => `Q${a.order + 1}: ${a.question}\nA: ${a.answer}`).join("\n\n")}
+
+Respond with ONLY a JSON object in this exact shape, no markdown fences, no extra text:
+{
+  "score": <integer 0-100, overall assessment across all answers>,
+  "feedback": [
+    { "order": <matching question number, 0-indexed>, "text": "<1-2 sentence specific feedback on that answer>" }
+  ]
+}`;
+
+  const raw = await generateJSON(prompt);
+
+  let parsed: EvalResult;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error("AI returned malformed JSON");
+  }
+
+  if (
+    typeof parsed.score !== "number" ||
+    !Array.isArray(parsed.feedback) ||
+    parsed.feedback.some((f) => typeof f.order !== "number" || typeof f.text !== "string")
+  ) {
+    throw new Error("AI response failed shape validation");
+  }
+
+  return parsed;
+}
+
+router.get("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const sessions = await prisma.interviewSession.findMany({
+      where: { userId: req.userId! },
+      include: { questions: true },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(sessions);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/:id", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const session = await prisma.interviewSession.findFirst({
+      where: { id: req.params.id as string, userId: req.userId! },
+      include: { questions: { orderBy: { order: "asc" } } },
+    });
+    if (!session) return res.status(404).json({ error: "Session not found" });
+    res.json(session);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const input = newSessionSchema.parse(req.body);
+
+    let questionTexts: string[];
+    try {
+      questionTexts = await generateQuestions(input.role, input.company, input.type);
+    } catch (aiErr) {
+      console.error("Gemini question generation failed:", aiErr);
+      return res.status(502).json({ error: "AI question generation failed, please try again." });
+    }
+
+    const session = await prisma.interviewSession.create({
+      data: {
+        userId: req.userId!,
+        role: input.role,
+        company: input.company ?? null,
+        type: input.type,
+        questions: {
+          create: questionTexts.map((text, i) => ({
+            text,
+            type: input.type,
+            order: i,
+          })),
+        },
+      },
+      include: { questions: true },
+    });
+
+    res.status(201).json(session);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/:id/questions/:qId", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const { answer } = z.object({ answer: z.string() }).parse(req.body);
+    const question = await prisma.interviewQuestion.update({
+      where: { id: req.params.qId as string },
+      data: { answer },
+    });
+    res.json(question);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/:id/complete", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const session = await prisma.interviewSession.findFirst({
+      where: { id: req.params.id as string, userId: req.userId! },
+      include: { questions: { orderBy: { order: "asc" } } },
+    });
+    if (!session) return res.status(404).json({ error: "Session not found" });
+
+    const answered = session.questions
+      .map((q, i) => ({ order: i, question: q.text, answer: q.answer }))
+      .filter((q): q is { order: number; question: string; answer: string } => Boolean(q.answer));
+
+    let score = 0;
+    let feedbackByOrder = new Map<number, string>();
+
+    if (answered.length > 0) {
+      try {
+        const evalResult = await evaluateAnswers(session.role, answered);
+        score = evalResult.score;
+        feedbackByOrder = new Map(evalResult.feedback.map((f) => [f.order, f.text]));
+      } catch (aiErr) {
+        console.error("Gemini evaluation failed:", aiErr);
+        return res.status(502).json({ error: "AI evaluation failed, please try again." });
+      }
+    }
+
+    await Promise.all(
+      session.questions.map((q, i) =>
+        prisma.interviewQuestion.update({
+          where: { id: q.id },
+          data: {
+            feedback: q.answer ? feedbackByOrder.get(i) ?? "No feedback generated." : "No answer submitted.",
+          },
+        })
+      )
+    );
+
+    const updated = await prisma.interviewSession.update({
+      where: { id: session.id },
+      data: { status: "completed", completedAt: new Date(), score },
+      include: { questions: true },
+    });
+
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+export default router;
+</file>
+
+<file path="server/src/index.ts">
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import interviewsRouter from "./routes/interviews";
+import resumeRouter from "./routes/resume";
+import { errorHandler } from "./middleware/errorHandler";
+
+const app = express();
+
+app.use(cors({ origin: process.env.CLIENT_URL ?? "http://localhost:3000", credentials: true }));
+app.use(express.json());
+
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
+app.use("/api/interviews", interviewsRouter);
+app.use("/api/resume", resumeRouter);
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT ?? 4000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+</file>
+
+<file path="client/app/layout.tsx">
+import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Geist, Geist_Mono } from "next/font/google";
+
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "Eleva",
+    template: "%s | Eleva",
+  },
+  description:
+    "AI-powered placement preparation platform with mock interviews, DSA roadmap, resume analysis and personalized feedback.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <section className="bg-slate-100 py-20 text-slate-900">
-      <Container>
-        <SectionHeading
-          title="Trusted by Future Engineers"
-          subtitle="Everything you need to prepare for placements with confidence."
-        />
-
-        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-<Card
-  key={stat.label}
-  className="text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
->
-  <h3 className="text-5xl font-bold text-blue-600">
-    {stat.value}
-  </h3>
-
-  <p className="mt-2 text-slate-600">
-    {stat.label}
-  </p>
-</Card>
-          ))}
-        </div>
-      </Container>
-    </section>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col"><ClerkProvider afterSignOutUrl="/">
+          {children}
+        </ClerkProvider></body>
+    </html>
   );
 }
 </file>
@@ -2640,6 +2622,103 @@ export default function InterviewsPageClient() {
 }
 </file>
 
+<file path="client/components/layout/Navbar.tsx">
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import Container from "../ui/Container";
+
+import { Menu, X } from "lucide-react";
+
+import { navLinks } from "@/constants/navLinks";
+
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+
+  return (
+    <nav className="sticky top-0 z-50 border-b border-slate-800 bg-black/80 backdrop-blur-md">
+      <Container>
+        <div className="flex h-20 items-center justify-between">
+
+          {/* Logo */}
+
+          <h1 className="cursor-pointer text-2xl font-bold transition-colors duration-300 hover:text-blue-400">
+            Eleva
+          </h1>
+
+          {/* Desktop Navigation */}
+
+          <div className="hidden items-center gap-8 md:flex">
+
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                className="text-slate-300 transition-colors duration-300 hover:text-blue-400"
+              >
+                {link.name}
+              </a>
+            ))}
+
+            <button
+              onClick={() => router.push("/sign-up")}
+              className="rounded-lg bg-white px-5 py-2 font-medium text-black transition hover:bg-slate-200"
+            >
+              Get Started
+            </button>
+
+          </div>
+
+          {/* Mobile Button */}
+
+          <button
+            className="md:hidden"
+            onClick={() => setIsOpen((prev) => !prev)}
+          >
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+
+        </div>
+
+        {/* Mobile Menu */}
+
+        {isOpen && (
+          <div className="border-t border-slate-800 py-6 md:hidden">
+
+            <div className="flex flex-col gap-6">
+
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="text-slate-300 transition-colors hover:text-white"
+                >
+                  {link.name}
+                </a>
+              ))}
+
+              <button
+                onClick={() => { setIsOpen(false); router.push("/sign-up"); }}
+                className="rounded-lg bg-white py-3 font-medium text-black"
+              >
+                Get Started
+              </button>
+
+            </div>
+
+          </div>
+        )}
+
+      </Container>
+    </nav>
+  );
+}
+</file>
+
 <file path="client/components/ui/Card.tsx">
 import { ReactNode } from "react";
 
@@ -2659,6 +2738,80 @@ export default function Card({
       {children}
     </div>
   );
+}
+</file>
+
+<file path="client/lib/resume.ts">
+import { Resume } from "@/types/resume";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+type GetToken = () => Promise<string | null>;
+
+interface ApiResume {
+  id: string;
+  fileName: string;
+  fileUrl: string | null;
+  status: "processing" | "analyzed" | "failed";
+  atsScore: number | null;
+  summary: string | null;
+  createdAt: string;
+  suggestions: { id: string; category: string; text: string }[];
+}
+
+function mapToResume(api: ApiResume): Resume {
+  return {
+    id: api.id,
+    fileName: api.fileName,
+    fileUrl: api.fileUrl ?? undefined,
+    uploadedAt: api.createdAt,
+    status: api.status,
+    analysis:
+      api.status === "analyzed" && api.atsScore !== null && api.summary !== null
+        ? {
+            atsScore: api.atsScore,
+            summary: api.summary,
+            suggestions: api.suggestions.map((s) => ({
+              id: s.id,
+              category: s.category as "formatting" | "content" | "keywords" | "structure",
+              text: s.text,
+            })),
+          }
+        : undefined,
+  };
+}
+
+async function authFetch(path: string, getToken: GetToken, options: RequestInit = {}) {
+  const token = await getToken();
+  const isFormData = options.body instanceof FormData;
+  const res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers: {
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      Authorization: `Bearer ${token}`,
+      ...(options.headers ?? {}),
+    },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCurrentResume(getToken: GetToken): Promise<Resume | null> {
+  const api: ApiResume | null = await authFetch("/api/resume", getToken);
+  return api ? mapToResume(api) : null;
+}
+
+export async function uploadResume(getToken: GetToken, file: File): Promise<Resume> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const api: ApiResume = await authFetch("/api/resume", getToken, {
+    method: "POST",
+    body: formData,
+  });
+  return mapToResume(api);
 }
 </file>
 
@@ -2693,6 +2846,300 @@ export default function Card({
 }
 </file>
 
+<file path="server/src/routes/resume.ts">
+import { Router, Response, NextFunction } from "express";
+import multer from "multer";
+import pdfParse from "pdf-parse";
+import { generateJSON } from "../lib/gemini";
+import { supabase, RESUME_BUCKET } from "../lib/supabase";
+import { prisma } from "../lib/prisma";
+import { requireAuth, AuthedRequest } from "../middleware/auth";
+
+const router = Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype !== "application/pdf") {
+      return cb(new Error("Only PDF files are accepted"));
+    }
+    cb(null, true);
+  },
+});
+
+const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour — regenerated on every fetch, so short-lived is fine
+
+interface AnalysisResult {
+  atsScore: number;
+  summary: string;
+  suggestions: { category: "formatting" | "content" | "keywords" | "structure"; text: string }[];
+}
+
+const VALID_CATEGORIES = ["formatting", "content", "keywords", "structure"];
+
+async function analyzeResume(resumeText: string): Promise<AnalysisResult> {
+  const prompt = `You are an ATS (Applicant Tracking System) and resume reviewer for students applying to tech internships/jobs.
+
+Analyze this resume text and respond with ONLY a JSON object in this exact shape, no markdown fences, no extra text:
+{
+  "atsScore": <integer 0-100>,
+  "summary": "<2-3 sentence overall assessment>",
+  "suggestions": [
+    { "category": "formatting" | "content" | "keywords" | "structure", "text": "<specific actionable suggestion>" }
+  ]
+}
+
+Provide 4-6 suggestions covering a mix of categories. Be specific to what's actually in the resume below, not generic advice.
+
+RESUME TEXT:
+${resumeText}`;
+
+  const raw = await generateJSON(prompt);
+
+  let parsed: AnalysisResult;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error("AI returned malformed JSON");
+  }
+
+  if (
+    typeof parsed.atsScore !== "number" ||
+    typeof parsed.summary !== "string" ||
+    !Array.isArray(parsed.suggestions) ||
+    parsed.suggestions.some((s) => !VALID_CATEGORIES.includes(s.category) || typeof s.text !== "string")
+  ) {
+    throw new Error("AI response failed shape validation");
+  }
+
+  return parsed;
+}
+
+async function withSignedUrl<T extends { fileUrl: string | null }>(resume: T | null): Promise<T | null> {
+  if (!resume || !resume.fileUrl) return resume;
+
+  const { data, error } = await supabase.storage
+    .from(RESUME_BUCKET)
+    .createSignedUrl(resume.fileUrl, SIGNED_URL_TTL_SECONDS);
+
+  if (error) {
+    console.error("Failed to generate signed URL:", error);
+    return resume; // fall back to returning the raw path rather than failing the whole request
+  }
+
+  return { ...resume, fileUrl: data.signedUrl };
+}
+
+router.get("/", requireAuth, async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  try {
+    const resume = await prisma.resume.findFirst({
+      where: { userId: req.userId! },
+      include: { suggestions: true },
+    });
+    res.json(await withSignedUrl(resume));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post(
+  "/",
+  requireAuth,
+  upload.single("file"),
+  async (req: AuthedRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const parsed = await pdfParse(req.file.buffer);
+      const text = parsed.text.trim();
+
+      if (text.length < 50) {
+        return res.status(400).json({
+          error: "Couldn't read enough text from this PDF. Make sure it's not a scanned image.",
+        });
+      }
+
+      let analysis: AnalysisResult;
+      try {
+        analysis = await analyzeResume(text);
+      } catch (aiErr) {
+        console.error("Gemini analysis failed:", aiErr);
+        return res.status(502).json({ error: "AI analysis failed, please try again." });
+      }
+
+      const sanitizedName = req.file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+const storagePath = `${req.userId}/${Date.now()}-${sanitizedName}`;
+      const { error: uploadError } = await supabase.storage
+        .from(RESUME_BUCKET)
+        .upload(storagePath, req.file.buffer, { contentType: "application/pdf", upsert: false });
+
+      if (uploadError) {
+        console.error("Supabase Storage upload failed:", uploadError);
+        return res.status(502).json({ error: "File storage failed, please try again." });
+      }
+
+      // Re-upload replaces the existing resume — clean up the old file in storage too, not just the DB row
+      const previous = await prisma.resume.findFirst({ where: { userId: req.userId! } });
+      if (previous?.fileUrl) {
+        await supabase.storage.from(RESUME_BUCKET).remove([previous.fileUrl]);
+      }
+      await prisma.resume.deleteMany({ where: { userId: req.userId! } });
+
+      const resume = await prisma.resume.create({
+        data: {
+          userId: req.userId!,
+          fileName: req.file.originalname,
+          fileUrl: storagePath,
+          status: "analyzed",
+          atsScore: analysis.atsScore,
+          summary: analysis.summary,
+          suggestions: { create: analysis.suggestions },
+        },
+        include: { suggestions: true },
+      });
+
+      res.status(201).json(await withSignedUrl(resume));
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+export default router;
+</file>
+
+<file path="client/components/home/Hero.tsx">
+"use client";
+
+import { useRouter } from "next/navigation";
+import Button from "@/components/ui/Button";
+import Container from "@/components/ui/Container";
+import Badge from "@/components/ui/Badge";
+import { Sparkles } from "lucide-react";
+
+export default function Hero() {
+  const router = useRouter();
+
+  return (
+    <section className="py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          <Badge>
+            <Sparkles size={16} className="mr-2" />
+            AI-Powered Placement Preparation
+          </Badge>
+          <h1 className="mt-6 text-5xl font-extrabold tracking-tight md:text-6xl">
+            Ace Your Next
+            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+              {" "}Technical Interview
+            </span>
+          </h1>
+
+          <p className="mt-6 text-lg leading-8 text-slate-600">
+            Practice AI-powered mock interviews, receive personalized
+            feedback, and track your improvement—all in one place.
+          </p>
+
+          <div className="mt-10 flex justify-center gap-4">
+            <Button onClick={() => router.push("/sign-up")}>
+              Get Started
+            </Button>
+
+            <Button variant="outline" className="!text-white !border-slate-600 hover:!bg-white/10">
+              Learn More
+            </Button>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+</file>
+
+<file path="client/components/home/Statistics.tsx">
+import Container from "@/components/ui/Container";
+import SectionHeading from "@/components/ui/SectionHeading";
+import Card from "@/components/ui/Card";
+import { stats } from "@/constants/statistics";
+
+
+export default function Statistics() {
+  return (
+    <section id="statistics" className="bg-slate-100 py-20 text-slate-900">
+      <Container>
+        <SectionHeading
+          title="Trusted by Future Engineers"
+          subtitle="Everything you need to prepare for placements with confidence."
+        />
+
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => (
+<Card
+  key={stat.label}
+  className="text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+>
+  <h3 className="text-5xl font-bold text-blue-600">
+    {stat.value}
+  </h3>
+
+  <p className="mt-2 text-slate-600">
+    {stat.label}
+  </p>
+</Card>
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+</file>
+
+<file path="server/package.json">
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@clerk/backend": "^3.11.5",
+    "@google/genai": "^2.12.0",
+    "@prisma/client": "^6.19.3",
+    "@supabase/supabase-js": "^2.110.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "multer": "^2.2.0",
+    "pdf-parse": "^1.1.1",
+    "prisma": "^6.19.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^26.1.1",
+    "@types/pdf-parse": "^1.1.5",
+    "tsx": "^4.23.0",
+    "typescript": "^7.0.2"
+  }
+}
+</file>
+
 <file path="client/app/page.tsx">
 import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/home/Hero";
@@ -2723,6 +3170,140 @@ export default function Home() {
     </main>
   );
 }
+</file>
+
+<file path="docs/ROADMAP.md">
+# Eleva Roadmap
+
+## Vision
+
+Build a startup-quality AI-powered placement preparation platform that helps students practice technical interviews, receive AI-driven feedback, and track their progress.
+
+---
+
+# Phase 1 — Foundation ✅
+
+- [x] Project Initialization
+- [x] Git Repository Setup
+- [x] GitHub Integration
+- [x] Next.js Setup
+- [x] TypeScript
+- [x] Tailwind CSS
+- [x] App Router Configuration
+- [x] Initial Project Structure
+
+---
+
+# Phase 2 — Landing Page ✅
+
+## Completed
+
+- [x] Responsive Navbar
+- [x] Mobile Navigation Menu
+- [x] Hero Section
+- [x] Features Section
+- [x] Statistics Section
+- [x] Testimonials Section
+- [x] Pricing Section
+- [x] Footer Redesign
+- [x] Reusable UI Design System
+- [x] Hero Badge
+- [x] Gradient Hero Heading
+- [x] Lucide React Icons
+- [x] Responsive Layout Improvements
+- [x] Reusable Constants Architecture
+- [x] Smooth Scrolling
+- [x] Hover Animations
+- [x] Landing Page Polish
+
+---
+
+# Phase 3 — Authentication ✅
+
+- [x] Clerk Authentication
+- [x] Login
+- [x] Signup
+- [x] Protected Routes
+- [x] User Profile
+- [x] Install Clerk
+- [x] Configure Environment Variables
+- [x] Add Clerk Provider
+- [x] Create Authentication Pages
+- [x] Protect Dashboard Routes
+- [x] Dashboard Shell
+
+---
+
+# Phase 4 — Dashboard ✅
+
+- [x] Dashboard Layout
+- [x] Sidebar Navigation
+- [x] Interview History
+- [x] Progress Dashboard (basic stats)
+- [x] User Settings (stubbed, Coming Soon)
+- [x] User Profile
+- [x] Real Statistics
+- [x] Resume Analysis
+- [ ] DSA Tracker (deferred v1.1)
+
+---
+
+# Phase 5 — AI Interview Engine ✅
+
+- [x] Resume Upload
+- [x] Resume Parsing
+- [x] AI Question Generation
+- [x] AI Mock Interview (text-based)
+- [x] AI Feedback
+- [x] Interview Reports
+
+---
+
+# Phase 6 — Voice & Analytics (deferred indefinitely, not in v1.0)
+
+- [ ] Voice-based Interviews
+- [ ] Confidence Detection
+- [ ] Weak Topic Analysis
+- [ ] Personalized Recommendations
+
+---
+
+# Phase 7 — Backend ✅
+
+- [x] Express Server
+- [x] PostgreSQL (Supabase)
+- [x] Prisma ORM
+- [x] Database Models (Interview + Resume)
+- [x] API Routes (Interview + Resume)
+
+---
+
+# Phase 8 — Deployment
+
+- [ ] Vercel Deployment
+- [ ] Production Environment Variables
+- [ ] Custom Domain
+- [ ] Portfolio Integration
+
+---
+
+# Version 1.0 — Placement MVP (Revised Scope, target: July 30, 2026)
+
+## In Scope
+- [x] Auth (Clerk) + protected routes
+- [x] Dashboard (stats, profile, nav)
+- [x] Interview module — text-based only (question gen, answer, AI eval, history) — backend live, AI mocked
+- [x] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions — backend live, AI mocked
+- [x] Backend — Express + Prisma + PostgreSQL, real auth-linked data (both modules)
+- [x] Real AI integration (Interview + Resume) — next sprint
+- [ ] Deployment — Vercel, env config, production build
+
+## Deferred to v1.1+ (Coming Soon badge in v1.0)
+- [ ] DSA Tracker
+- [ ] Voice / webcam interviews
+- [ ] Speech-to-text, confidence/emotion detection
+- [ ] Advanced AI analytics, personalized coaching
+- [ ] Notifications, email reminders
 </file>
 
 <file path="docs/ARCHITECTURE.md">
@@ -2990,654 +3571,294 @@ User row -> route handler runs with `req.userId` available.
 Stack: Prisma 6 (pinned — v7 requires driver adapters, deferred until 
 after MVP ships) + Supabase Postgres (Mumbai region, pooled connection 
 for runtime, direct connection for migrations).
+## Resume Module Backend (Sprint 9)
+
+Same pattern as the Interview module: `client/lib/resume.ts` is the seam, 
+swapped from an in-memory store to real `authFetch` calls with zero 
+changes to `ResumeAnalysisView.tsx` (the presentation layer never knew 
+the data source changed).
+
+One divergence worth noting: the backend response shape is flat 
+(`atsScore`, `summary`, `suggestions` at top level, matching the Prisma 
+model) while the client `Resume` type nests these under `.analysis` 
+(matching how the UI was already built against the mock). Rather than 
+change the UI or the schema to match each other, `lib/resume.ts` maps 
+between them — this is deliberately what the seam is for.
+
+`Resume` is modeled as a true 1:1 with `User` (`userId @unique`) rather 
+than 1:many, matching the existing "re-upload replaces" UX rather than 
+resume versioning. Upload does `deleteMany` + `create` rather than 
+`update`, since Prisma's `upsert` doesn't cleanly support replacing a 
+nested relation (`suggestions`) in one call — old suggestions cascade-delete 
+via the schema's `onDelete: Cascade`.
+
+File storage remains out of scope: `server/src/routes/resume.ts` uses 
+`multer` with in-memory storage purely to accept the multipart upload; 
+`req.file.buffer` is never persisted. `fileUrl` stays `null` until 
+`TODO(v1.0-backend)` real storage (S3/Cloudinary) is wired. ATS scoring 
+and suggestions remain `TODO(v1.0-AI)` mocked server-side, same 
+isolation pattern as the Interview module's question bank / scoring.
+
+## Real AI Integration (Sprint 10)
+
+`server/src/lib/gemini.ts` is a shared client wrapping `@google/genai` 
+(the current SDK — the older `@google/generative-ai` package is deprecated 
+and was swapped out mid-sprint after hitting persistent 503s tied to its 
+legacy endpoint). `generateJSON(prompt)` is the single entry point both 
+routes use: it calls Gemini with JSON response mode, retries up to 2 extra 
+times specifically on transient 503/overloaded errors (not on malformed 
+output — that fails fast, correctly), and returns the raw text for the 
+caller to parse and shape-validate.
+
+Model used: `gemini-flash-lite-latest`. The heavier `gemini-flash-latest` 
+hit sustained free-tier demand overload during dev; the lite tier proved 
+reliably available. Using the `-latest` alias rather than a pinned version 
+is deliberate — a hardcoded model name (`gemini-2.5-flash`) broke mid-sprint 
+when Google deprecated that generation entirely, so the alias trades a 
+little version predictability for not breaking again the same way.
+
+Both `resume.ts` and `interviews.ts` follow the same pattern: build a 
+prompt demanding a specific JSON shape, call `generateJSON`, `JSON.parse` 
+the result, then manually shape-validate every field before trusting it 
+(AI output is treated as untrusted input, same as any external API). A 
+validation failure or a JSON parse failure both throw and surface as a 
+502 to the client — this is a new failure mode the app didn't have before 
+(a working HTTP round-trip that still fails because the AI's output was 
+malformed), distinct from normal HTTP/DB errors.
+
+Interview evaluation only calls the AI for questions the candidate 
+actually answered — unanswered questions get a static "No answer 
+submitted." locally, same as the old mock, without spending an API call 
+on nothing.
+
+No client-side changes were needed for either module — response shapes 
+are identical to the mocked versions, so `lib/interviews.ts` and 
+`lib/resume.ts` didn't change at all. This is the seam pattern paying off 
+exactly as intended.
+
+## Resume File Storage (Sprint 11)
+
+`server/src/lib/supabase.ts` holds a Supabase client authenticated with 
+the service role/secret key — full access, backend-only, never exposed 
+to `client/`. Files go into a private `resumes` bucket.
+
+The `Resume.fileUrl` column stores the storage **path** 
+(`userId/timestamp-filename.pdf`), not a permanent link — the bucket is 
+private, so any signed URL has an expiry. Rather than store a link that 
+eventually breaks, `resume.ts` generates a fresh 1-hour signed URL on 
+every `GET`/`POST` response via `withSignedUrl()`. The DB never holds a 
+URL that can go stale; the API response always does.
+
+Re-upload deletes the previous file from storage (not just the DB row) 
+before creating the new one, keeping the bucket from accumulating orphaned 
+files as users iterate on their resume.
+
+Filenames are sanitized before being used in the storage path (special 
+characters stripped) since Storage object keys are stricter than 
+Postgres columns about allowed characters — the original filename is 
+preserved separately for display.
 </file>
 
 <file path="docs/PROJECT_LOG.md">
-# Development Log
-
-## Day 1 (29 June 2026)
-
-### Objective
-
-Set up the Eleva project and establish a scalable frontend architecture.
-
-### Completed
-
-* Created Eleva project repository
-* Initialized Git and configured `main` branch
-* Created monorepo-style structure:
-
-  * `client/`
-  * `server/`
-  * `docs/`
-* Bootstrapped Next.js project with:
-
-  * TypeScript
-  * Tailwind CSS
-  * ESLint
-  * App Router
-* Learned the basic React component architecture
-* Replaced the default Next.js landing page
-* Created reusable components:
-
-  * Navbar
-  * Hero
-  * Features
-  * Footer
-* Organized components into:
-
-  * `components/layout`
-  * `components/home`
-* Added responsive feature cards
-* Added smooth navigation to the Features section
-* Established Git commit workflow
-
----
-
-## Git History
-
-* Initialize Eleva with Next.js and project structure
-* Build landing page architecture and reusable components
-
----
-
-## Concepts Learned
-
-* React Components
-* JSX
-* Component Composition
-* Tailwind Utility Classes
-* Responsive Design
-* Project Folder Architecture
-* Git Workflow
-
----
-
-## Next Session
-
-* Create reusable UI components
-* Improve landing page design
-* Build modern SaaS hero section
-* Improve typography and spacing
-
-# PROJECT LOG
-
-## Sprint 2 — UI Design System & Landing Page Refactor
-
-### Date
-July 1, 2026
-
-### Objectives
-- Build a reusable UI component library.
-- Refactor the landing page to use reusable components.
-- Improve maintainability and scalability.
-- Push the latest progress to GitHub.
-
-### Completed
-
-#### UI Components
-- Created reusable `Container` component.
-- Created reusable `Button` component with:
-  - Variants
-  - Prop forwarding
-  - Native button attribute support
-- Created reusable `Card` component.
-- Created reusable `SectionHeading` component.
-- Added reusable `Badge` component.
-
-#### Landing Page
-- Refactored Hero section.
-- Refactored Features section using reusable cards.
-- Added Statistics section.
-- Replaced repeated Tailwind classes with reusable components.
-
-#### React Concepts Learned
-- Component composition
-- `children`
-- `React.ReactNode`
-- Interface extension
-- Rest props (`...props`)
-- Prop forwarding
-- Conditional rendering
-- Data-driven UI using arrays
-- Rendering lists using `.map()`
-- Object destructuring
-
-#### Git
-- Created meaningful milestone commit.
-- Connected local repository to GitHub.
-- Successfully pushed the project to GitHub.
-
-### Result
-
-Eleva now has the foundation of a reusable design system that will support future frontend development.
-
-## Sprint 3 — Landing Page Polish & Data Architecture
-
-### Completed
-
-- Added Testimonials section.
-- Integrated Lucide React icons.
-- Implemented reusable Badge component.
-- Enhanced Hero section with premium styling.
-- Improved Statistics section with reusable Card component.
-- Extended Card component to support custom className.
-- Introduced constants folder to separate UI from data.
-- Improved responsive layout.
-- Fixed project dependency structure.
-- Connected GitHub remote and established push workflow.
-
-### Engineering Concepts Learned
-
-- Component extensibility
-- Separation of Concerns
-- Design System evolution
-- External icon libraries
-- Project dependency management
-
-# Sprint 4 — Landing Page Completion
-
-## Features Completed
-
-- Implemented Pricing section.
-- Added reusable pricing data in `constants/pricing.ts`.
-- Redesigned Footer with multiple sections:
-  - Brand
-  - Quick Links
-  - Resources
-  - Social Links
-- Added reusable footer data in `constants/footerLinks.ts`.
-- Built a fully responsive Navbar.
-- Added mobile navigation with hamburger menu.
-- Implemented smooth scrolling for section navigation.
-- Added hover animations and micro-interactions across the landing page.
-- Improved reusable Button component with:
-  - hover animations
-  - active state
-  - focus ring
-  - smoother transitions
-- Improved reusable Card component with better transition behavior and explicit text colors.
-
----
-
-## React Concepts Learned
-
-- Client Components (`"use client"`)
-- `useState`
-- Event Handling (`onClick`)
-- Conditional Rendering
-- Responsive UI using Tailwind breakpoints
-- State-driven UI updates
-
----
-
-## UI/UX Improvements
-
-- Better CTA buttons
-- Interactive cards
-- Sticky navigation
-- Responsive mobile experience
-- Improved spacing and layout consistency
-- Smooth scrolling navigation
-
----
-
-## Git
-
-Completed first major feature milestone:
-**Responsive Landing Page MVP**
-
----
-
-# Sprint 3 — Authentication & Dashboard Foundation
-
-Date: July 2026
-
-## Completed
-
-### Authentication
-
-- Integrated Clerk Authentication.
-- Added ClerkProvider to Root Layout.
-- Created `.env.local` with Clerk Publishable and Secret Keys.
-- Added authentication middleware/proxy.
-- Created Sign In page.
-- Created Sign Up page.
-- Added protected Dashboard route.
-
-### Landing Page
-
-- Connected "Get Started" CTA to authentication flow.
-- Navbar button now redirects users to Sign Up.
-
-### Dashboard
-
-Created initial dashboard layout consisting of:
-
-- Sidebar
-- Topbar
-- Dashboard Content Area
-
-Current dashboard sections:
-
-- Mock Interviews
-- Resume Score
-- DSA Progress
-- Achievements
-
-### UI
-
-Created reusable dashboard components.
-
-Current folder structure:
-
-client/
-├── app/dashboard
-├── components/dashboard
-│ ├── Sidebar.tsx
-│ ├── Topbar.tsx
-│ ├── DashboardContent.tsx
-│ └── DashboardCard.tsx
-
-### Status
-
-Authentication is fully functional.
-
-Users can:
-
-- Sign Up
-- Verify email
-- Sign In
-- Access protected dashboard
-
-Dashboard currently displays placeholder statistics.
-
-Next sprint will focus on making the dashboard interactive.
-
----
-
-# Sprint 5 — Dashboard Data Architecture
-
-Date: July 2026
-
-## Objective
-
-Replace static placeholder dashboard cards with a typed, data-driven rendering pipeline that's ready to swap mock data for a real backend later with zero component changes.
-
-## Completed
-
-- Created `types/dashboard.ts` — `DashboardStat`, `DashboardActivity`, `DashboardData` interfaces.
-- Created `constants/dashboardData.ts` — mock data implementing those types.
-- Created `lib/dashboard.ts` — `getDashboardStats()`, the single data-access seam for the dashboard.
-- Refactored `DashboardCard.tsx` to accept `label`/`icon name`/`trend` instead of hardcoded `title`/JSX icon.
-- Refactored `app/dashboard/page.tsx` into a Server Component that awaits `getDashboardStats()` and renders cards via `.map()`.
-
-## Engineering Concepts Learned
-
-- Data-access layer pattern (seam between UI and data source)
-- Server Components fetching data directly with `await`, no `useEffect`
-- Icon-name-to-component mapping for JSX-free data files
-- Designing types before implementation ("types first")
-
-## Status
-
-Dashboard now renders 4 stat cards from a typed mock data layer. Sidebar links to `/dashboard/interviews`, `/dashboard/resume`, `/dashboard/dsa`, `/dashboard/analytics`, `/dashboard/settings` still 404 — next sprint session will add stub routes and the User Profile page.
-
----
-
-# Sprint 5 (continued) — Routing & User Profile
-
-## Completed
-
-- Created `ComingSoon` reusable placeholder component.
-- Added stub pages for all sidebar routes: `/dashboard/interviews`, `/dashboard/resume`, `/dashboard/dsa`, `/dashboard/analytics`, `/dashboard/settings` — no more 404s from the sidebar.
-- Added `/dashboard/profile` using Clerk's `<UserProfile />` for full account management.
-- Updated `Sidebar.tsx` to include the Profile link.
-
-## Engineering Concepts Learned
-
-- Parameterized placeholder components to avoid duplicated JSX across stub routes
-- When to use a library's built-in UI vs. building your own (security-sensitive surfaces)
-- Next.js file-based routing — folder name must exactly match the `href` path
-
-## Status
-
-Sprint 5 complete. Dashboard now has: dynamic data-driven stat cards, a fully working sidebar with no dead links, and a real Profile page. All remaining dashboard sections (Interviews, Resume, DSA, Analytics, Settings) are stubbed and ready for their own dedicated sprints per the roadmap.
-
----
-
-# Sprint 6 — Mock Interview Module (Text-Based, MVP)
-
-Date: July 12, 2026
-
-## Strategy Shift
-
-Pivoted to MVP-first development. Priority is a deployed, placement-ready v1.0 
-over full feature completeness. Target deploy date: **July 30, 2026**. 
-DSA Tracker deferred to v1.1 (post-launch) — will ship as "Coming Soon" 
-badge in v1.0 nav.
-
-## Objective
-
-Build a complete, clickable Interview module end-to-end on mock data, 
-with AI integration points clearly isolated for later wiring — no voice/webcam, 
-text-only per revised MVP scope.
-
-## Completed
-
-- Extended `types/interview.ts` — `InterviewSession`, `InterviewQuestion`, 
-  `InterviewType`, `InterviewStatus`, `NewInterviewInput`.
-- Built mock question bank in `constants/interviewData.ts` (`generateMockQuestions`).
-- Extended `lib/interviews.ts` seam with in-memory session store: 
-  `getInterviewSessions`, `getInterviewSession`, `createInterviewSession`, 
-  `submitAnswer`, `completeInterview`.
-- Built `StartInterviewForm`, `InterviewHistoryCard`, `InterviewsPageClient`.
-- Built `InterviewSessionClient` — question-by-question answer flow.
-- Built `InterviewResults` — score + per-question feedback view.
-- Wired dynamic route `app/dashboard/interviews/[id]/page.tsx`.
-- Marked two seam points with `TODO(v1.0-AI)` for real OpenAI integration:
-  question generation and answer evaluation/scoring.
-
-## Engineering Concepts Learned
-
-- Dynamic routing (`[id]` segments) in App Router
-- Designing a mock seam that mirrors the shape of a future async AI call
-- Client-side in-memory store as a bridge before real backend/DB exists
-- Marking integration points explicitly (`TODO(v1.0-AI)`) for clean future handoff
-
-## Status
-
-Interview module is functionally complete on mock data: start → answer → 
-score → results → history. Next: Resume Analyzer frontend shell (same 
-pattern), per revised MVP roadmap.
-
----
-
-# Sprint 7 — Resume Analyzer (Frontend Shell)
-
-Date: July 2026
-
-## Objective
-
-Build a complete Resume Analyzer UI on mock data, following the same 
-Data → Constants → lib (seam) → Components → UI pattern as Interviews, 
-with AI/backend integration points isolated for later wiring.
-
-## Completed
-
-- Created `types/resume.ts` — `Resume`, `ResumeAnalysis`, `ResumeSuggestion`.
-- Created `constants/resumeData.ts` — mock AI analysis output (summary, 
-  ATS score, categorized suggestions).
-- Created `lib/resume.ts` — in-memory seam: `getCurrentResume`, `uploadResume` 
-  (single current resume, re-upload replaces it — no versioning for MVP).
-- Built `ResumeUpload` — drag-and-drop + file picker, PDF-only validation, 
-  simulated processing delay.
-- Built `ResumeAnalysisView` — ATS score, summary, categorized suggestion cards.
-- Built `ResumePageClient` — ties upload + analysis view together.
-- Wired `app/dashboard/resume/page.tsx`.
-- Marked two integration points: `TODO(v1.0-backend)` (real file storage) 
-  and `TODO(v1.0-AI)` (real PDF parsing + AI feedback).
-
-## Verification Pass
-
-Audited existing stub routes before starting new work — confirmed 
-`app/dashboard/dsa/page.tsx`, `app/dashboard/analytics/page.tsx`, and 
-`app/dashboard/settings/page.tsx` were already correctly wired to the 
-`ComingSoon` component from earlier stub work (Sprint 5). No new work 
-needed; sidebar links match route folders exactly. Confirms DSA Tracker 
-is already in its intended v1.0 "Coming Soon" state per the MVP scope pivot.
-
-## Bugs Found & Fixed (post-integration testing)
-
-1. **Stale TS server** — VS Code's TypeScript language service cached the 
-   module graph from before `types/` files existed, throwing false 
-   "cannot find module" errors even though files were correctly created. 
-   Fixed via "TypeScript: Restart TS Server."
-2. **Interview page never wired** — `app/dashboard/interviews/page.tsx` 
-   still pointed at the old `ComingSoon` stub instead of the new 
-   `InterviewsPageClient`. Overwritten with the correct import.
-3. **Next.js 16 async `params` bug** — `app/dashboard/interviews/[id]/page.tsx` 
-   destructured `params` synchronously, but Next.js 16 makes dynamic route 
-   `params` a `Promise`. This meant `sessionId` was an unresolved Promise 
-   object, not a string, so `getInterviewSession()` never found a match and 
-   silently redirected back to the interview list before any question 
-   appeared. Fixed by making the page `async` and `await`-ing `params`.
-
-## Status
-
-Resume Analyzer is functionally complete on mock data. Interview module 
-confirmed fully working end-to-end after bug fixes above (start → answer 
-→ score → results → history). Both modules ready for backend wiring.
-
----
-
-# Sprint 8 — Backend Foundation (In Progress)
-
-Date: July 2026
-
-## Strategy Context
-
-Per the MVP scope pivot (see Roadmap v1.0 section), this sprint builds 
-the real backend that Interviews and Resume's mock `lib/` seams will 
-swap into. Chose **Supabase** for hosted Postgres and a **separate 
-Express server** (not Next.js API routes) to match the original 
-architecture plan and resume/portfolio positioning (Express.js + 
-PostgreSQL + Prisma ORM as distinct, demonstrable backend skills).
-
-## Completed So Far
-
-- Drafted `server/` scaffold: Express + TypeScript + Prisma, `tsx` for 
-  dev hot-reload.
-- Designed Prisma schema: `User`, `InterviewSession`, `InterviewQuestion`, 
-  `Resume`, `ResumeSuggestion`, and `DsaProblem` (schema defined now for 
-  v1.1, even though the feature itself stays "Coming Soon" in v1.0 — 
-  costs nothing to model today, avoids a future migration).
-- Built `middleware/auth.ts` — verifies Clerk session tokens sent from 
-  the Next.js frontend, find-or-creates a local `User` row keyed by 
-  Clerk's user ID.
-- Built `middleware/errorHandler.ts` — centralized error responses.
-- Built full `routes/interviews.ts` — list, get one, create (mock 
-  question bank server-side), submit answer, complete + score. Mirrors 
-  the exact function shape of the frontend's `lib/interviews.ts` seam.
-- Built `src/index.ts` — Express app entry, CORS scoped to the Next.js 
-  client origin.
-
-## Open Items / Blocked On
-
-- Supabase project not yet created — need pooled + direct connection 
-  strings before running the first Prisma migration.
-- Need to confirm `CLERK_SECRET_KEY` is available server-side (should 
-  match the client's Clerk key).
-- Flagged uncertainty: Clerk JWT payload may not include `email` by 
-  default — may need `@clerk/backend`'s `getUser()` call instead of 
-  relying on token claims. To be verified once auth is tested live.
-- Resume routes (`routes/resume.ts`) not yet built — planned as the 
-  next piece once Interviews routes are verified working against a 
-  real DB.
-
-## Status
-
-Backend code is written and ready to run, pending Supabase credentials.
-
----
-
-# Sprint 8 — Backend Foundation (Complete)
-
-Date: July 2026
-
-## Objective
-Stand up a real backend (Express + Prisma + Supabase Postgres) and wire 
-the Interview module to it end-to-end, replacing the mock in-memory seam.
-
-## Completed
-- Supabase Postgres project created (region: Mumbai/ap-south-1).
-- server/ scaffolded: Express + TypeScript, tsx for dev.
-- Prisma schema: User, InterviewSession, InterviewQuestion. First 
-  migration applied successfully to live DB.
-- middleware/auth.ts — verifies Clerk session tokens, upserts local 
-  User row keyed by Clerk ID.
-- middleware/errorHandler.ts — centralized error responses.
-- routes/interviews.ts — full CRUD (list, get, create w/ mock question 
-  bank, submit answer, complete + score).
-- Frontend lib/interviews.ts rewritten to call real API with 
-  Clerk-authenticated fetch (getToken from useAuth()) instead of mock store.
-- InterviewsPageClient and InterviewSessionClient updated accordingly.
-
-## Bugs Fixed
-- Prisma 7 (installed by default via `npm install prisma`) changed config 
-  format entirely (driver adapters, prisma.config.ts). Downgraded to 
-  Prisma 6 for stability and simpler setup given project timeline.
-- tsconfig.json module resolution mismatch caused 38 cascading TS errors 
-  (CommonJS vs ESM). Fixed by aligning module/moduleResolution settings.
-- Express 4 vs @types/express v5 mismatch caused route param type errors 
-  (string | string[] vs string) — resolved with explicit type casts.
-- Missing CLIENT_URL env var broke CORS — added to server/.env.
-- Verified full auth chain manually via browser DevTools: pulled a live 
-  Clerk token via `window.Clerk.session.getToken()`, called the Express 
-  API directly, confirmed real database round-trip before wiring the UI.
-
-## Status
-Interview module now runs fully on real infrastructure: Next.js -> 
-Clerk auth -> Express -> Prisma -> Supabase Postgres. Verified end-to-end 
-through the actual UI, not just API testing. Resume routes are next 
-(same pattern, new short sprint).
-</file>
-
-<file path="docs/ROADMAP.md">
-# Eleva Roadmap
-
-## Vision
-
-Build a startup-quality AI-powered placement preparation platform that helps students practice technical interviews, receive AI-driven feedback, and track their progress.
-
----
-
-# Phase 1 — Foundation ✅
-
-- [x] Project Initialization
-- [x] Git Repository Setup
-- [x] GitHub Integration
-- [x] Next.js Setup
-- [x] TypeScript
-- [x] Tailwind CSS
-- [x] App Router Configuration
-- [x] Initial Project Structure
-
----
-
-# Phase 2 — Landing Page ✅
-
-## Completed
-
-- [x] Responsive Navbar
-- [x] Mobile Navigation Menu
-- [x] Hero Section
-- [x] Features Section
-- [x] Statistics Section
-- [x] Testimonials Section
-- [x] Pricing Section
-- [x] Footer Redesign
-- [x] Reusable UI Design System
-- [x] Hero Badge
-- [x] Gradient Hero Heading
-- [x] Lucide React Icons
-- [x] Responsive Layout Improvements
-- [x] Reusable Constants Architecture
-- [x] Smooth Scrolling
-- [x] Hover Animations
-- [x] Landing Page Polish
-
-
----
-
-# Phase 3 — Authentication ( Current Sprint)
-
-- [ ] Clerk Authentication
-- [ ] Login
-- [ ] Signup
-- [ ] Protected Routes
-- [ ] User Profile
-- [x] Install Clerk
-- [x] Configure Environment Variables
-- [x] Add Clerk Provider
-- [x] Create Authentication Pages
-- [x] Protect Dashboard Routes
-- [x] Dashboard Shell
-
----
-
-# Phase 4 — Dashboard
-
-- [ ] Dashboard Layout
-- [ ] Sidebar Navigation
-- [ ] Interview History
-- [ ] Progress Dashboard
-- [ ] User Settings
-- [x] User Profile
-- [x] Real Statistics
-- [ ] Interview History
-- [ ] Resume Analysis
-- [ ] DSA Tracker
-- [ ] Settings
-
----
-
-# Phase 5 — AI Interview Engine
-
-- [ ] Resume Upload
-- [ ] Resume Parsing
-- [ ] AI Question Generation
-- [ ] AI Mock Interview
-- [ ] AI Feedback
-- [ ] Interview Reports
-
----
-
-# Phase 6 — Voice & Analytics
-
-- [ ] Voice-based Interviews
-- [ ] Confidence Detection
-- [ ] Weak Topic Analysis
-- [ ] Personalized Recommendations
-
----
-
-# Phase 7 — Backend
-
-- [ ] Express Server
-- [ ] PostgreSQL
-- [ ] Prisma ORM
-- [ ] Database Models
-- [ ] API Routes
-
----
-
-# Phase 8 — Deployment
-
-- [ ] Vercel Deployment
-- [ ] Production Environment Variables
-- [ ] Custom Domain
-- [ ] Portfolio Integration
-
----
-
-# Version 1.0 — Placement MVP (Revised Scope, target: July 30, 2026)
-
-## In Scope
-- [x] Auth (Clerk) + protected routes
-- [x] Dashboard (stats, profile, nav)
-- [x] Interview module — text-based only (question gen, answer, AI eval, history)
-- [x] Resume Analyzer — upload, parse, AI feedback, basic ATS suggestions
-- [ ] Backend — Express + Prisma + PostgreSQL, real auth-linked data
-- [ ] Deployment — Vercel, env config, production build
-- [x] Backend — Express + Prisma + PostgreSQL (Interview module live; Resume module next)
-
-## Deferred to v1.1+ (Coming Soon badge in v1.0)
-- [ ] DSA Tracker
-- [ ] Voice / webcam interviews
-- [ ] Speech-to-text, confidence/emotion detection
-- [ ] Advanced AI analytics, personalized coaching
-- [ ] Notifications, email reminders
+CONTEXT: Continuing Eleva build (I'm uploading ARCHITECTURE.md, PROJECT_LOG.md, 
+ROADMAP.md, and possibly a repomix-output.xml of the current repo alongside this — 
+read those for full file contents and detailed history. This message covers the 
+"why" and current live state that isn't fully captured in those docs.)
+
+## Who I am / how I work
+3rd-year BTech CSE student (BIT Mesra), building this as a placement portfolio 
+project. This is my first time building a real separate backend (previously only 
+did frontend-only or same-process "backend" via Next.js lib/ functions) — so I 
+understand concepts but need things explained clearly, not glossed over, 
+especially anything genuinely new (middleware, ORMs, auth tokens, etc). Don't 
+over-slow-down on things that are simple though — move at a good pace, just 
+pause to explain the genuinely complex bits.
+
+Preferences: full copy-paste-ready file drops (not fragments), minimal code 
+comments (explain in chat instead), I make final calls but you should make 
+architectural decisions independently and just tell me what you decided and why, 
+commit after each sprint with meaningful messages, remind me to update the 
+ARCHITECTURE.md/PROJECT_LOG.md/ROADMAP.md docs since I tend to forget mid-sprint, 
+want candid/honest feedback not cheerleading.
+
+## Strategy (this is the most important context)
+Originally planned full roadmap (voice interviews, webcam, DSA tracker, advanced 
+analytics, etc.) — PIVOTED mid-project to MVP-first. Reasoning: I need this 
+deployed and usable as a placement resume project ASAP, not feature-complete.
+
+- Target deploy: July 30, 2026 (hard deadline, self-imposed for placement prep)
+- Time budget: ~3 hrs/day
+- Priority: complete + deployed > ambitious + unfinished
+- DSA Tracker: DEFERRED to v1.1, ships as "Coming Soon" badge in v1.0 nav
+- Voice/webcam/emotion-detection/advanced-analytics: all deferred indefinitely, 
+  not in v1.0 scope at all
+- AI Interview: TEXT-ONLY (select role -> generate questions -> type answers -> 
+  AI evaluates -> feedback -> save to history)
+- Resume Analyzer: basic only (upload -> parse -> AI feedback -> basic ATS 
+  suggestions), no advanced scoring algorithms
+
+## Tech stack (final decisions made this project)
+- Frontend: client/ — Next.js 16.2.9, TypeScript, Tailwind CSS, React 19, 
+  Clerk (@clerk/nextjs ^7.5.16) for auth
+- Backend: server/ — SEPARATE Express server (deliberate choice over Next.js 
+  API routes), TypeScript, tsx for dev hot-reload
+- ORM: Prisma — PINNED TO V6 (see gotcha below, this matters)
+- Database: Supabase Postgres, region ap-south-1 (Mumbai), project name 
+  "eleva-db", org "harshz05's Org"
+- Auth: Clerk on frontend AND backend — backend verifies Clerk session tokens 
+  via @clerk/backend's verifyToken(), upserts a local User row keyed by clerkId
+- File upload handling: multer (memory storage only, no persistence yet)
+
+## Architecture pattern (established since Day 1, still followed)
+Data -> Constants -> lib/ (data-access seam) -> Components -> Rendered UI
+
+lib/ functions are the ONLY seam between UI and data source. Both 
+lib/interviews.ts AND lib/resume.ts now call the REAL Express backend with 
+Clerk-authenticated fetch. lib/resume.ts additionally translates the backend's 
+flat response shape into the client's nested Resume.analysis shape — the 
+seam absorbs that mismatch so the UI components never changed.
+
+## CURRENT LIVE STATE (as of end of last session — Sprint 9 complete)
+
+### Working end-to-end on REAL infrastructure:
+- Auth: Clerk sign up/in/out, protected routes — fully functional
+- Dashboard: home, profile, stats cards, nav, responsive — fully functional
+- Interview module: COMPLETE end-to-end on real backend (Sprint 8). Data 
+  persists in real Supabase Postgres (User, InterviewSession, 
+  InterviewQuestion tables).
+- Resume Analyzer: COMPLETE end-to-end on real backend (Sprint 9). Upload 
+  (PDF, multer memory storage) -> mock ATS analysis -> persisted to real 
+  Supabase Postgres (Resume, ResumeSuggestion tables, 1:1 with User) -> 
+  survives page reload. Verified through actual UI, not just API testing.
+
+### Explicitly stubbed / deferred (by design, not unfinished):
+- Resume file bytes are NOT persisted anywhere (no S3/Cloudinary yet) — 
+  TODO(v1.0-backend) in server/src/routes/resume.ts
+- Resume ATS scoring + suggestions are mocked server-side — 
+  TODO(v1.0-AI) in same file
+- Interview question generation + evaluation are mocked server-side — 
+  TODO(v1.0-AI) in server/src/routes/interviews.ts
+- DSA Tracker, Analytics, Settings — all render ComingSoon.tsx, intentional 
+  per MVP scope
+
+## Backend structure (server/)
+server/
+├── prisma/
+│   ├── schema.prisma       — User, InterviewSession, InterviewQuestion, 
+│   │                          Resume, ResumeSuggestion, and their enums
+│   └── migrations/         — 20260714075533_init, 
+│                              <timestamp>_add_resume_models
+├── src/
+│   ├── index.ts             — Express app entry, CORS (CLIENT_URL env), 
+│   │                          mounts /api/interviews, /api/resume, /health
+│   ├── lib/
+│   │   └── prisma.ts        — singleton PrismaClient (dev hot-reload safe)
+│   ├── middleware/
+│   │   ├── auth.ts          — requireAuth: verifies Clerk Bearer token, 
+│   │   │                      upserts local User row, attaches req.userId
+│   │   └── errorHandler.ts  — centralized error responses
+│   └── routes/
+│       ├── interviews.ts    — GET /, GET /:id, POST /, PATCH /:id/questions/:qId, 
+│       │                       POST /:id/complete
+│       └── resume.ts        — GET / (current resume), POST / (multer upload, 
+│                               replaces existing resume, mock-analyzes, persists)
+├── .env
+├── package.json              — added: multer, @types/multer (Sprint 9)
+└── tsconfig.json
+
+Frontend (Sprint 9 additions):
+- client/lib/resume.ts rewritten: authFetch pattern (same as interviews.ts) 
+  plus a mapToResume() translation layer for the flat->nested shape mismatch. 
+  FormData uploads skip the Content-Type header (browser sets multipart 
+  boundary automatically) — authFetch() checks `body instanceof FormData`.
+- client/components/resume/ResumePageClient.tsx and ResumeUpload.tsx 
+  updated to import useAuth from "@clerk/nextjs" and thread getToken through, 
+  same as the Interview components in Sprint 8.
+
+## GOTCHAS HIT THIS PROJECT (important — will save time if they recur)
+
+1. **Prisma 7 vs 6**: unpinned install pulls Prisma 7 (breaking config 
+   changes). ALWAYS use `prisma@6 @prisma/client@6`, v6 syntax 
+   (url + directUrl directly in schema.prisma, plain `new PrismaClient()`).
+
+2. **Express 4 + @types/express mismatch**: unpinned @types/express can pull 
+   v5-compatible types against Express 4 runtime, breaking req.params typing. 
+   Fixed with `as string` casts.
+
+3. **tsconfig module/moduleResolution mismatch**: target ES2022, module 
+   CommonJS, esModuleInterop true, no explicit moduleResolution line.
+
+4. **Postgres password URL-encoding**: `@` in the DB password must be 
+   URL-encoded as `%40` in DATABASE_URL/DIRECT_URL.
+
+5. **Clerk tokens expire fast (~60s)**: grab a fresh token immediately 
+   before each manual DevTools test.
+
+6. **Two servers must run simultaneously**: client (3000) and server (4000) 
+   are separate processes — verify both terminals show "running on port X".
+
+7. **Next.js 16 async params**: dynamic route params are a Promise now — 
+   `async function Page({ params }: { params: Promise<{ id: string }> })`.
+
+8. **Prisma client regeneration doesn't always propagate live**: after 
+   `prisma migrate dev` adds a new model, a running `tsx watch` process and 
+   VS Code's TS server can both keep using the stale generated client. Fix: 
+   `npx prisma generate` explicitly, restart `tsx watch`, and if VS Code 
+   still shows red squiggles, `Developer: Reload Window` (plain "Restart TS 
+   Server" sometimes isn't enough — it has its own separate cache).
+
+9. **tsx doesn't type-check**: it strips TypeScript types and runs JS 
+   directly, so red squiggles in the Problems tab don't mean the server is 
+   broken. Trust an actual browser/API test over the editor's Problems tab 
+   when the two disagree.
+
+10. **`tsx` is a local dependency, not a global command**: running `tsx 
+    watch` directly in PowerShell fails with CommandNotFoundException. Use 
+    `npm run dev` (the package.json script) or `npx tsx watch src/index.ts`.
+
+11. **Google's Gemini Node SDK churn**: `@google/generative-ai` is now a 
+    deprecated legacy package — use `@google/genai` instead 
+    (`npm install @google/genai`), the API shape differs 
+    (`ai.models.generateContent({model, contents, config})` vs the old 
+    `getGenerativeModel().generateContent()`). Also, hardcoded model 
+    names go stale fast — `gemini-2.5-flash` was deprecated mid-project. 
+    Prefer `-latest` aliases (`gemini-flash-lite-latest`) over pinned 
+    version names for exactly this reason. Free-tier flash models can 
+    also hit sustained 503 "high demand" errors at peak times — the lite 
+    tier and a retry-with-backoff (see gemini.ts) both help.  
+ 12. **tsx watch doesn't reload on .env changes**: only source file edits 
+    trigger a restart. After editing .env, always Ctrl+C and restart 
+    npm run dev manually — otherwise the process keeps running with 
+    stale env values, which looks exactly like a config bug but isn't.     
+
+## NEXT PLANNED SPRINT (where we left off)
+Deployment — the last piece before v1.0 ships:
+1. Client: deploy to Vercel, production env vars (NEXT_PUBLIC_API_URL 
+   pointing at the deployed backend, Clerk production keys)
+2. Server: pick a host for the Express app (Railway/Render are the 
+   common choices for Express + Prisma) — Vercel serverless doesn't fit 
+   a long-running Express server well
+3. Production CORS config (CLIENT_URL env var needs the real deployed 
+   client URL, not localhost)
+4. Update all API keys to production values where relevant (Clerk, 
+   Gemini, Supabase already work as-is since they're not environment-specific)
+5. Final end-to-end smoke test on the live URLs
+6. Update docs, final commit
+
+Timeline check: All backend functionality (auth, both modules, real AI, 
+real file storage) is complete and verified. Only deployment remains 
+before v1.0. Deploy target July 30 — comfortable margin left.
+### Explicitly stubbed / deferred (by design, not unfinished):
+- Resume file bytes are NOT persisted anywhere (no S3/Cloudinary yet) — 
+  TODO(v1.0-backend) in server/src/routes/resume.ts
+- DSA Tracker, Analytics, Settings — all render ComingSoon.tsx, intentional 
+  per MVP scope
+
+### AI integration — COMPLETE (Sprint 10):
+- Both Interview question generation/evaluation and Resume ATS 
+  analysis now call real Google Gemini (gemini-flash-lite-latest via 
+  @google/genai), not mocks. No TODO(v1.0-AI) markers remain in either 
+  route file.
 </file>
 
 </files>

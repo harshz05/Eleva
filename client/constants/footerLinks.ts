@@ -15,15 +15,7 @@ export const quickLinks = [
 
 export const resources = [
   {
-    name: "Blog",
-    href: "#",
-  },
-  {
-    name: "FAQ",
-    href: "#",
-  },
-  {
     name: "Contact",
-    href: "#",
+    href: "mailto:harsh.guptaa205@gmail.com",
   },
 ];
