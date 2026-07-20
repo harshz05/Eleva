@@ -6,7 +6,7 @@ import { stats } from "@/constants/statistics";
 
 export default function Statistics() {
   return (
-    <section className="bg-slate-100 py-20 text-slate-900">
+    <section id="statistics" className="bg-slate-100 py-20 text-slate-900">
       <Container>
         <SectionHeading
           title="Trusted by Future Engineers"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import Container from "../ui/Container";
 
@@ -10,6 +11,7 @@ import { navLinks } from "@/constants/navLinks";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-800 bg-black/80 backdrop-blur-md">
@@ -36,7 +38,10 @@ export default function Navbar() {
               </a>
             ))}
 
-            <button className="rounded-lg bg-white px-5 py-2 font-medium text-black transition hover:bg-slate-200">
+            <button
+              onClick={() => router.push("/sign-up")}
+              className="rounded-lg bg-white px-5 py-2 font-medium text-black transition hover:bg-slate-200"
+            >
               Get Started
             </button>
 
@@ -71,7 +76,10 @@ export default function Navbar() {
                 </a>
               ))}
 
-              <button className="rounded-lg bg-white py-3 font-medium text-black">
+              <button
+                onClick={() => { setIsOpen(false); router.push("/sign-up"); }}
+                className="rounded-lg bg-white py-3 font-medium text-black"
+              >
                 Get Started
               </button>
 
