@@ -348,3 +348,33 @@ Filenames are sanitized before being used in the storage path (special
 characters stripped) since Storage object keys are stricter than 
 Postgres columns about allowed characters — the original filename is 
 preserved separately for display.
+
+## Deployment (Sprint 12)
+
+Client deployed to Vercel, server deployed to Render — deliberately 
+different platforms, since Vercel's serverless model doesn't fit a 
+long-running Express app with a persistent Prisma connection pool the 
+way Render's always-on process model does.
+
+Order of setup mattered: server deployed first (to get its live URL), 
+then client (pointed at that URL via `NEXT_PUBLIC_API_URL`), then the 
+server's `CLIENT_URL` env var updated to the real Vercel URL to close 
+the CORS loop.
+
+Landing page audit (post-deploy): found several pre-existing dead 
+buttons/links from early scaffold code that were never caught because 
+local testing always went straight to `/dashboard` rather than through 
+the marketing page as a first-time visitor would. Fixed: nav anchor 
+`id`s missing on all four sections, Get Started buttons (Navbar, Hero, 
+both Pricing cards) having no `onClick`/navigation at all, Footer's 
+Blog/FAQ/Contact pointing at dead `#` hrefs, social links pointing at 
+generic platform homepages instead of real profiles. Lesson: a feature 
+being "built" and a feature being "wired to do something when clicked" 
+are different claims — verify both.
+
+Dashboard stats (`/api/dashboard`) were still 100% mocked from before 
+Sprint 8 — nobody had circled back to wire them once the Interview and 
+Resume backends went live. Now computed live: completed interview 
+count, latest resume ATS score, best interview score (max of completed 
+sessions — renamed from a fabricated "Achievements" metric that had no 
+real data behind it).

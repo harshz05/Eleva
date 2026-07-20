@@ -129,3 +129,32 @@ Build a startup-quality AI-powered placement preparation platform that helps stu
 - [ ] Speech-to-text, confidence/emotion detection
 - [ ] Advanced AI analytics, personalized coaching
 - [ ] Notifications, email reminders
+
+# Version 1.0 — Placement MVP — ✅ SHIPPED (deployed before July 30, 2026 target)
+
+## In Scope — all complete
+- [x] Auth (Clerk) + protected routes, correct post-auth redirect
+- [x] Dashboard — real stats from live data, not mocked
+- [x] Interview module — real AI question gen (varied per session) + evaluation
+- [x] Resume Analyzer — real AI parsing + ATS feedback + real file storage
+- [x] Backend — Express + Prisma + PostgreSQL
+- [x] Real AI integration (Gemini, both modules)
+- [x] Deployment — Vercel (client) + Render (server), live and verified
+
+## Deferred to v1.1+
+- [ ] DSA Tracker
+- [ ] Voice / webcam interviews
+- [ ] MCQ-style interview questions (discussed, agreed to defer)
+- [ ] Company-specific question banks (pending PDF from Harsh)
+- [ ] Speech-to-text, confidence/emotion detection
+- [ ] Advanced AI analytics, personalized coaching
+- [ ] Notifications, email reminders
+
+## Portfolio/production hardening — not yet done, discussed
+- [ ] Audit git history for accidentally-committed secrets before treating 
+      repo as fully public; rotate any exposed keys
+- [ ] Real README + LICENSE for GitHub presentation
+- [ ] Clerk production instance (currently dev instance — fine for low-
+      volume resume-link traffic, not for public promotion)
+- [ ] Privacy policy / terms page before accepting real public sign-ups
+- [ ] Rate limiting (Gemini free-tier quota has no protection currently)
