@@ -13,17 +13,20 @@ const newSessionSchema = z.object({
 });
 
 async function generateQuestions(role: string, company: string | undefined, type: string): Promise<string[]> {
+  const variationSeed = Math.random().toString(36).slice(2, 8);
   const prompt = `You are a technical interviewer preparing questions for a mock interview.
 
 Candidate is interviewing for: ${role}${company ? ` at ${company}` : ""}
 Interview type: ${type}
 
-Generate exactly 3 interview questions appropriate for this role and type. Respond with ONLY a JSON object in this exact shape, no markdown fences, no extra text:
+Generate exactly 3 interview questions appropriate for this role and type. Vary your questions each time you're asked — avoid defaulting to the most generic, commonly-cited question for this role/type. Draw from a wide range of realistic sub-topics. (Session variation tag, ignore in output: ${variationSeed})
+
+Respond with ONLY a JSON object in this exact shape, no markdown fences, no extra text:
 {
   "questions": ["question 1", "question 2", "question 3"]
 }`;
 
-  const raw = await generateJSON(prompt);
+  const raw = await generateJSON(prompt, 0.9);
 
   let parsed: { questions: string[] };
   try {

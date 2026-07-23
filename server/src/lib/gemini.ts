@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 const MODEL_NAME = "gemini-flash-lite-latest"; // lite tier — less demand congestion than flash-latest, proven working
 
-export async function generateJSON(prompt: string): Promise<string> {
+export async function generateJSON(prompt: string, temperature = 0.4): Promise<string> {
   const maxAttempts = 3;
   let lastError: unknown;
 
@@ -12,7 +12,7 @@ export async function generateJSON(prompt: string): Promise<string> {
       const result = await ai.models.generateContent({
         model: MODEL_NAME,
         contents: prompt,
-        config: { responseMimeType: "application/json", temperature: 0.4 },
+        config: { responseMimeType: "application/json", temperature },
       });
       return (result.text ?? "").trim();
     } catch (err) {
